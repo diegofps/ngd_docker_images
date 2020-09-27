@@ -1,4 +1,4 @@
-all: build
+all: local
 
 local:
 	docker build -t test:v0 .
