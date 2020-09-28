@@ -5,7 +5,7 @@ This image is based on the face detection library from [ShiqiYu/libfacedetection
 # Using with Docker
 
 ```bash
-docker run -d --name demo_openalpr -p 4568:4568 diegofpsouza/demo_ws_facedetection:0.0.1
+docker run -d --name demo_openalpr -p 4568:4568 diegofpsouza/demo_ws_facedetection:latest
 ```
 
 # Usage Example
