@@ -31,13 +31,12 @@ spec:
       - name: {{ $lbname }}
         image: {{ .Values.loadbalancer.source }}/{{ .Values.loadbalancer.name }}:{{ .Values.loadbalancer.tag }}
         imagePullPolicy: Always
+        volumeMounts:
+        - name: keys
+          mountPath: /keys
         env:
         - name: APP_NAME
           value: {{ $labelname | quote }}
-        - name: SSH_USER
-          value: "ngd"
-        - name: NUM_THREADS
-          value: "16"
         - name: REFRESH_SECONDS
           value: "5"
         - name: API_SERVER
@@ -56,3 +55,7 @@ spec:
           value: "time_to_weight_3"
         ports:
         - containerPort: {{ .Values.loadbalancer.port }}
+      volumes:
+      - name: keys
+        hostPath:
+          path: {{ .Values.loadbalancer.apiserver-keys }}

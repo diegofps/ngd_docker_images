@@ -18,4 +18,5 @@ loadbalancer:
   apiserver: https://10.1.1.1:6443
   strategy: ADAPTIVE_WEIGHT
   port: 4570
+  apiserver-keys: ~/.ngd/keys/
 
