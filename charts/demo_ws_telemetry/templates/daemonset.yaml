@@ -1,0 +1,27 @@
+{{- $fullname := include "fullname" . -}}
+{{- $deployname := printf "%s-app" $fullname -}}
+{{- $labelname := printf "%s-%s" $fullname .Values.app.label -}}
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ $deployname }}
+  labels:
+    app: {{ $labelname }}
+spec:
+  selector:
+    matchLabels:
+      name: {{ $labelname }}
+  template:
+    metadata:
+      labels:
+        name: {{ $labelname }}
+    spec:
+      hostNetwork: true
+      hostPID: true
+      containers:
+      - name: {{ .Values.app.label }}
+        image: {{ .Values.app.source }}/{{ .Values.app.name }}:{{ .Values.app.tag }}
+        ports:
+        - containerPort: 4580
+          hostPort: 4580
+          name: scrape

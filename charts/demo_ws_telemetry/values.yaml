@@ -1,0 +1,9 @@
+# Default values for demo_ws_telemetry.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+app:
+  label: demo-ws-telemetry
+  source: diegofpsouza
+  name: demo_ws_telemetry
+  tag: 0.0.1
