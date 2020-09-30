@@ -1,6 +1,6 @@
 {{- $fullname := include "openalpr.fullname" . -}}
 {{- $deployname := printf "%s-app-host" $fullname -}}
-{{- $labelname := printf "%s-%s" $fullname .Values.app.name -}}
+{{- $labelname := printf "%s-%s" $fullname .Values.app.label -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -27,7 +27,7 @@ spec:
                 values:
                 - amd64
       containers:
-      - name: {{ .Values.app.name }}
+      - name: {{ .Values.app.label }}
         image: {{ .Values.app.source }}/{{ .Values.app.name }}:{{ .Values.app.tag }}
         imagePullPolicy: Always
         ports:
