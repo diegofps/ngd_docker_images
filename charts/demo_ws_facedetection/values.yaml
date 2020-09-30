@@ -6,7 +6,7 @@ app:
   label: demo-ws-facedetection
   source: diegofpsouza
   name: demo_ws_facedetection
-  tag: 0.0.1
+  tag: latest
   csd_pods: 56
   host_pods: 64
   port: 4568
