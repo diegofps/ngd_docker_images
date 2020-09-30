@@ -29,3 +29,17 @@ helm install facedetection demo_ws_facedetection \
     --set loadbalancer.apiserverkeys=${HOME}/.ngd/keys \
     --set loadbalancer.apiserver=https://10.20.31.92:6443
 ```
+
+## tesseract
+
+```bash
+helm install tesseract demo_ws_tesseract \
+    --set loadbalancer.apiserverkeys=${HOME}/.ngd/keys \
+    --set loadbalancer.apiserver=https://10.20.31.92:6443
+```
+
+## telemetry
+
+```bash
+helm install telemetry demo_ws_telemetry
+```
