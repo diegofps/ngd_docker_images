@@ -1,6 +1,5 @@
-{{- $fullname := include "fullname" . -}}
-{{- $deployname := printf "%s-app" $fullname -}}
-{{- $labelname := printf "%s-%s" $fullname .Values.app.label -}}
+{{- $deployname := printf "%s-app" .Chart.Name -}}
+{{- $labelname := printf "%s-%s" .Chart.Name .Values.app.label -}}
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
