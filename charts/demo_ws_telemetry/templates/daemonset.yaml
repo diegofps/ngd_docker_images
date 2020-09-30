@@ -1,5 +1,5 @@
-{{- $deployname := printf "%s-app" .Chart.Name -}}
-{{- $labelname := printf "%s-%s" .Chart.Name .Values.app.label -}}
+{{- $deployname := printf "%s-app" .Release.Name -}}
+{{- $labelname := printf "%s-%s" .Release.Name .Values.app.label -}}
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
