@@ -3,8 +3,9 @@
 # Declare variables to be passed into your templates.
 
 app:
+  label: demo-ws-facedetection
   source: diegofpsouza
-  name: facedetection
+  name: demo_ws_facedetection
   tag: 0.0.1
   csd_pods: 56
   host_pods: 64
@@ -18,4 +19,4 @@ loadbalancer:
   apiserver: https://10.1.1.1:6443
   strategy: ADAPTIVE_WEIGHT
   port: 4570
-  apiserver-keys: ~/.ngd/keys/
+  apiserverkeys: /home/ngd/.ngd/keys/

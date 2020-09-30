@@ -1,6 +1,6 @@
 {{- $fullname := include "openalpr.fullname" . -}}
 {{- $lbname := printf "%s-loadbalancer" $fullname -}}
-{{- $labelname := printf "%s-%s" $fullname .Values.app.name -}}
+{{- $labelname := printf "%s-%s" $fullname .Values.app.label -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -58,4 +58,4 @@ spec:
       volumes:
       - name: keys
         hostPath:
-          path: {{ .Values.loadbalancer.apiserver-keys }}
+          path: {{ .Values.loadbalancer.apiserverkeys }}
