@@ -1,0 +1,60 @@
+{{- $proxyname := printf "%s-loadbalancer" .Release.Name -}}
+{{- $labelname := printf "%s-%s" .Release.Name .Values.app.label -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $proxyname }}
+  labels:
+    app: {{ $proxyname }}
+spec:
+  replicas: {{ .Values.loadbalancer.pods }}
+  selector:
+    matchLabels:
+      app: {{ $proxyname }}
+  template:
+    metadata:
+      labels:
+        app: {{ $proxyname }}
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: In
+                values:
+                - perl
+                - host.local
+      containers:
+      - name: {{ $proxyname }}
+        image: {{ .Values.loadbalancer.source }}/{{ .Values.loadbalancer.name }}:{{ .Values.loadbalancer.tag }}
+        imagePullPolicy: Always
+        volumeMounts:
+        - name: keys
+          mountPath: /keys
+        env:
+        - name: APP_NAME
+          value: {{ $labelname | quote }}
+        - name: REFRESH_SECONDS
+          value: "5"
+        - name: API_SERVER
+          value: {{ .Values.loadbalancer.apiserver | quote }}
+        - name: SELF_SERVER
+          value: "http://localhost:4570"
+        - name: STRATEGY
+          value: {{ .Values.loadbalancer.strategy | quote }}
+        - name: MIN_CPU_FOR_WEIGHT
+          value: "0.9"
+        - name: MOVING_AVERAGE_LEN
+          value: "1"
+        - name: ON_BUSY
+          value: "1"
+        - name: TIME_TO_WEIGHT
+          value: "time_to_weight_3"
+        ports:
+        - containerPort: {{ .Values.loadbalancer.port }}
+      volumes:
+      - name: keys
+        hostPath:
+          path: {{ .Values.loadbalancer.apiserverkeys -}}

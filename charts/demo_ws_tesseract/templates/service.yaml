@@ -1,0 +1,14 @@
+{{- $svcname := printf "%s-svc" .Release.Name -}}
+{{- $proxyname := printf "%s-loadbalancer" .Release.Name -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $svcname }}
+spec:
+  selector:
+    app: {{ $proxyname }}
+  ports:
+    - protocol: TCP
+      port: {{ .Values.loadbalancer.port }}
+      targetPort: {{ .Values.loadbalancer.port }}
+  type: LoadBalancer
