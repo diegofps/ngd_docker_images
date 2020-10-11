@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-
 from pymongo import MongoClient, ASCENDING, DESCENDING
 from pyfacedetectioncnn import FaceDetectionCNN
 
@@ -20,7 +19,7 @@ import os
 
 HOSTHOSTNAME = os.getenv("HOSTHOSTNAME", "Unknown")
 HOSTTARGET = os.getenv("HOSTTARGET", "/")
-TARGET = os.getenv('MONITORTARGET', '/target')
+TARGET = os.getenv('TARGET', '/target')
 MONGOSERVER = os.getenv('MONGOSERVER', '192.168.1.138')
 MONGOUSER = os.getenv('MONGOUSER', 'mongoadmin')
 MONGOPASS = os.getenv('MONGOPASS', 'secret')
@@ -94,6 +93,7 @@ def process_file(pathname):
             'path': pathname.replace(TARGET, HOSTTARGET, 1),
             'created_at': datetime.datetime.now(),
             'b64image': encode_image(img, 128),
+            'type': 'faces',
             'faces': faces2
         }
         
@@ -127,6 +127,7 @@ class Handler(pyinotify.ProcessEvent):
         except Exception as err:
             traceback.print_exc()
             print(err)
+            print(err.__class__)
             print("sorry :/")
         sys.stdout.flush()
 
