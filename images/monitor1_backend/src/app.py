@@ -11,6 +11,10 @@ import time
 import sys
 import os
 
+_print = print
+def print(*args, **params):
+    _print(*args, **params)
+    sys.stdout.flush()
 
 RABBITMQSERVER = os.getenv('RABBITMQSERVER', '192.168.1.138')
 MONGOSERVER = os.getenv('MONGOSERVER', '192.168.1.138')
@@ -18,9 +22,9 @@ MONGOUSER = os.getenv('MONGOUSER', 'mongoadmin')
 MONGOPASS = os.getenv('MONGOPASS', 'secret')
 MONGOPORT = int(os.getenv('MONGOPORT', '27017'))
 
-print("Starting backend server")
-print(RABBITMQSERVER)
-print(MONGOSERVER)
+print("--- Starting backend server ---")
+print("RABBITMQSERVER:", RABBITMQSERVER)
+print("MONGOSERVER:", MONGOSERVER)
 
 
 # Connect to mongodb
