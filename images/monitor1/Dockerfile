@@ -1,6 +1,6 @@
 FROM diegofpsouza/demo_ws_facedetection:0.0.1
 
-RUN pip3 install pyinotify
+RUN pip3 install pyinotify pymongo pika
 
 WORKDIR /app
 
