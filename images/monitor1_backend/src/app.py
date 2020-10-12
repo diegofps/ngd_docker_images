@@ -35,7 +35,7 @@ album = banco['events']
 
 # Init flask server
 app = Flask(__name__)
-CORS(app, resources={r"/test/*": {"origins": "*"}})
+CORS(app, resources={r"/*": {"origins": "*"}})
 app.config['SECRET_KEY'] = 'hdsfgksdukjfgasudjfghasjkfgsdahfgsdjhkfgdsjhf'
 
 
@@ -88,7 +88,7 @@ rl.start()
 
 
 # Server json api
-@app.route('/events')
+@app.route('/api/events')
 def events():
     print("Returning events")
     data = list(album.find().limit(10).sort('created_at', DESCENDING))
@@ -122,3 +122,4 @@ def test_disconnect():
 # Start the app
 if __name__ == '__main__':
     socketio.run(app)
+

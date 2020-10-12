@@ -5,16 +5,20 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
-    items: [{}]
+    items: []
   },
 
   mutations: {
-    addMsg(state, event) {
-      state.items.push({event})
+    pushItem(state, item) {
+      state.items.push(item)
     },
 
     clear(state) {
       state.items = []
+    },
+
+    setItems(state, items) {
+      state.items = items
     }
   },
 

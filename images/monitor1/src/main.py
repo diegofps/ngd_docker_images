@@ -78,6 +78,7 @@ def prepare_response(img, pathname, faces):
         img2 = img[r[1]:r[1]+r[3], r[0]:r[0]+r[2]]
 
         faces2.append({
+                'uuid': str(uuid.uuid4()),
                 'rect': r,
                 'confidence': c,
                 'p1': p1,
@@ -93,7 +94,7 @@ def prepare_response(img, pathname, faces):
         'hostname': HOSTHOSTNAME,
         'path': pathname.replace(TARGET, HOSTTARGET, 1),
         'created_at': datetime.datetime.now(),
-        'b64image': encode_image(img, 128),
+        'b64image': encode_image(img, 256),
         'type': 'faces',
         'faces': faces2
     }

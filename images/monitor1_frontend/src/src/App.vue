@@ -60,8 +60,10 @@ export default {
       var buffer = new Uint8Array(raw.data)
       var data = String.fromCharCode.apply(null, buffer)
       var response = JSON.parse(data)
+      
+      console.log("New item")
       console.log(response)
-      //this.$store.commit("addMsg", "WS:" + data.data)
+      this.$store.commit("pushItem", response)
     },
 
     onWSDisconnect() {
@@ -72,7 +74,7 @@ export default {
   created() {
     console.log("Connecting WebSocket")
 
-    var socket = Client('http://192.168.1.138:8081/test')
+    var socket = Client('http://192.168.1.138:5000/test')
 
     socket.on('connect', this.onWSConnect)
     socket.on('event', this.onWSResponse)
