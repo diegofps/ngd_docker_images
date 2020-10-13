@@ -1,0 +1,49 @@
+<html>
+<header>
+    <script src="//code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
+
+    <script type="text/javascript" charset="utf-8">
+
+    $(document).ready(function() {
+        console.log("Connecting");
+        var socket = io.connect('http://' + document.domain + ':' + location.port + '/test');
+        
+        socket.on('connect', function(msg) {
+            console.log("Connected");
+        });
+        
+        socket.on('event', function(msg) {
+            console.log("received event");
+            $('#log').append('<p>Received: ' + msg.data + '</p>');
+        });
+        
+        $('#emit').submit(function(event) {
+            event.preventDefault();
+            socket.emit('event', {data: $('#emit_data').val()});
+            return false;
+        });
+    });
+    </script>
+</header>
+<body>
+    <h1>Hello!</h1>
+    <h1>Flask-SocketIO Test</h1>
+    <p>Async mode is: <b>{{ async_mode }}</b></p>
+    <p>Average ping/pong latency: <b><span id="ping-pong"></span>ms</b></p>
+    <h2>Send:</h2>
+    
+    <form id="emit">
+        <input type="text" name="emit_data" id="emit_data" placeholder="Message" value="echo msg">
+        <input type="submit" value="Echo">
+    </form>
+    
+    <form id="broadcast">
+        <input type="text" name="broadcast_data" id="broadcast_data" placeholder="Message" value="broadcast msg">
+        <input type="submit" value="Broadcast">
+    </form>
+    
+    <h2>Receive:</h2>
+    <div id="log"></div>
+</body>
+</html>

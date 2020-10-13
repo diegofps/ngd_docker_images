@@ -2,6 +2,12 @@
   <v-container>
 
     <v-row>
+      <v-btn block elevation="4" @click="clear">
+        Clear
+      </v-btn>
+    </v-row>
+
+    <v-row>
       <v-col cols="4" v-for="item in items" :key="item.uuid">
         <CardFaces v-bind:item=item />
       </v-col>
@@ -33,6 +39,10 @@ export default {
       console.log("success")
       console.log(response.data)
       this.$store.commit("setItems", response.data)
+    },
+
+    clear() {
+      this.$store.commit("clearItems")
     }
   },
 

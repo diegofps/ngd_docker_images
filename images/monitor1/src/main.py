@@ -12,6 +12,7 @@ import base64
 import json
 import pika
 import uuid
+import time
 import sys
 import cv2
 import os
@@ -26,9 +27,16 @@ MONGOPASS = os.getenv('MONGOPASS', 'secret')
 MONGOPORT = int(os.getenv('MONGOPORT', '27017'))
 RABBITMQSERVER = os.getenv('RABBITMQSERVER', '192.168.1.138')
 
-connection = pika.BlockingConnection(pika.ConnectionParameters(RABBITMQSERVER))
-channel = connection.channel()
-channel.queue_declare(queue='hello')
+while True:
+    try:
+        connection = pika.BlockingConnection(pika.ConnectionParameters(RABBITMQSERVER))
+        channel = connection.channel()
+        channel.queue_declare(queue='hello')
+        break
+    except:
+        print("Failed to connect to RabbitMQ, retrying in 5s")
+        time.sleep(5)
+
 
 cliente = MongoClient(MONGOSERVER, port=MONGOPORT, username=MONGOUSER, password=MONGOPASS)
 banco = cliente['monitor-database']
@@ -119,7 +127,8 @@ def send_to_rabbitmq(response):
         try:
             channel.basic_publish(exchange='',
                             routing_key='hello',
-                            body=body)
+                            body=body,
+                            mandatory=True)
             break
         except pika.exceptions.AMQPConnectionError:
             print("Connection was lost, reconnecting")

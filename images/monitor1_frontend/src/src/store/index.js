@@ -10,10 +10,10 @@ export default new Vuex.Store({
 
   mutations: {
     pushItem(state, item) {
-      state.items.push(item)
+      state.items.unshift(item)
     },
 
-    clear(state) {
+    clearItems(state) {
       state.items = []
     },
 

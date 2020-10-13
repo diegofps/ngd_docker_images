@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 
-from flask import Flask, render_template, make_response, jsonify
+from flask import Flask, render_template, make_response, jsonify, request
 from flask_socketio import SocketIO, emit
 from flask_cors import CORS, cross_origin
 from pymongo import MongoClient, ASCENDING, DESCENDING
 
 import threading
+import requests
 import pika
 import time
 import sys
@@ -43,48 +44,41 @@ app.config['SECRET_KEY'] = 'hdsfgksdukjfgasudjfghasjkfgsdahfgsdjhkfgdsjhf'
 socketio = SocketIO(app, cors_allowed_origins="*")
 
 
+def rabbit_callback(ch, method, properties, body):
+    headers = {'content-type': 'application/json'}
+    requests.post("http://localhost:5000/api/broadcast", data=body, headers=headers)
+
 # Connect to rabbitmq
-class RabbitListener(threading.Thread):
+def main_rabbit():
+    print("Starting RabbitMQ listening thread")
 
-    def __init__(self):
-        print("Starting RabbitListener")
-        super().__init__()
+    while True:
+        try:
+            connection = pika.BlockingConnection(pika.ConnectionParameters(RABBITMQSERVER))
+            channel = connection.channel()
 
-    def callback(self, ch, method, properties, body):
-        print("Received RabbitMQ event, forwarding to WebSocket")
-        socketio.emit('event', {'data': body}, namespace="/test")
+            channel.queue_declare(queue='hello')
 
-    def run(self):
-        print("Starting RabbitMQ listening thread")
+            channel.basic_consume(queue='hello',
+                                auto_ack=True,
+                                on_message_callback=rabbit_callback)
 
-        while True:
-            try:
-                connection = pika.BlockingConnection(pika.ConnectionParameters(RABBITMQSERVER))
-                channel = connection.channel()
+            print('Listening on RabbitMQ')
+            channel.start_consuming()
+        except KeyboardInterrupt:
+            print("Bye")
+            raise
+        except:
+            print("RabbitMQ connection error, reconnecting in 5s")
+            time.sleep(5)
+    
 
-                channel.queue_declare(queue='hello')
-
-                channel.basic_consume(queue='hello',
-                                    auto_ack=True,
-                                    on_message_callback=self.callback)
-
-                print('Listening on RabbitMQ')
-                channel.start_consuming()
-            except KeyboardInterrupt:
-                print("Bye")
-                raise
-            except:
-                print("RabbitMQ connection error, reconnecting in 5s")
-                time.sleep(5)
-
-rl = RabbitListener()
-rl.start()
-
+socketio.start_background_task(target=main_rabbit)
 
 # Server html methods
-#@app.route('/flask')
-#def index():
-#    return render_template('index.html')
+@app.route('/api/index')
+def index():
+    return render_template('index.html')
 
 
 # Server json api
@@ -98,6 +92,11 @@ def events():
 
     return jsonify(data)
 
+@app.route('/api/broadcast', methods=["POST"])
+def broadcast():
+    socketio.emit('event', {'data': request.json}, namespace="/test")
+    return jsonify({'msg':'ok'})
+
 
 # Wesocket events
 # @socketio.on('my event', namespace='/test')
@@ -108,7 +107,6 @@ def events():
 # def test_broadcast(message):
 #     emit('my response', {'data': message['data']}, broadcast=True)
 
-@cross_origin()
 @socketio.on('connect', namespace='/test')
 def test_connect():
     print("Client connected")

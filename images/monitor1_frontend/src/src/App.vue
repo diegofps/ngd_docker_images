@@ -37,12 +37,12 @@
 <script>
 import Client from 'socket.io-client'
 
+// var decoder = new TextDecoder("utf-8");
+
 export default {
   name: 'App',
 
-  data: () => ({
-    //
-  }),
+  data: () => ({}),
 
   methods: {
     go(name, query) {
@@ -57,9 +57,11 @@ export default {
     },
 
     onWSResponse(raw) {
-      var buffer = new Uint8Array(raw.data)
-      var data = String.fromCharCode.apply(null, buffer)
-      var response = JSON.parse(data)
+      // var buffer = new Uint8Array(raw.data)
+      // var data = decoder.decode(buffer)
+      // var response = JSON.parse(data)
+
+      var response = raw.data;
       
       console.log("New item")
       console.log(response)
@@ -74,7 +76,7 @@ export default {
   created() {
     console.log("Connecting WebSocket")
 
-    var socket = Client('http://192.168.1.138:5000/test')
+    var socket = Client('/test')
 
     socket.on('connect', this.onWSConnect)
     socket.on('event', this.onWSResponse)
