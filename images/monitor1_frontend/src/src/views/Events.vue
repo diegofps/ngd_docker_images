@@ -8,9 +8,7 @@
     </v-row>
 
     <v-row>
-      <v-col cols="4" v-for="item in items" :key="item.uuid">
-        <CardFaces v-bind:item=item />
-      </v-col>
+      <CardFaces v-bind:item=item v-for="item in items" :key="item.uuid"/>
     </v-row>
 
   </v-container>
