@@ -1,2 +1,4 @@
 **/__pycache__/**
 images/monitor1/target
+images/monitor1_cron/src/*.csv
+images/monitor1_cron/src/*.parquet
