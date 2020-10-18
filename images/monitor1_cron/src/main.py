@@ -11,13 +11,13 @@ MONGOSERVER = os.getenv('MONGOSERVER', '192.168.1.138')
 MONGOUSER = os.getenv('MONGOUSER', 'mongoadmin')
 MONGOPASS = os.getenv('MONGOPASS', 'secret')
 MONGOPORT = int(os.getenv('MONGOPORT', '27017'))
-TARGETFOLDER = os.getenv('TARGETFOLDER', './')
+TARGET = os.getenv('TARGET', './')
 BUFFERSIZE = int(os.getenv('BUFFERSIZE', '10000'))
 
-FILES_CSV = os.path.join(TARGETFOLDER, "files.csv")
-FACES_CSV = os.path.join(TARGETFOLDER, "faces.csv")
-FILES_PARQUET = os.path.join(TARGETFOLDER, "files.parquet")
-FACES_PARQUET = os.path.join(TARGETFOLDER, "faces.parquet")
+FILES_CSV = os.path.join(TARGET, "files.csv")
+FACES_CSV = os.path.join(TARGET, "faces.csv")
+FILES_PARQUET = os.path.join(TARGET, "files.parquet")
+FACES_PARQUET = os.path.join(TARGET, "faces.parquet")
 
 cliente = MongoClient(MONGOSERVER, port=MONGOPORT, username=MONGOUSER, password=MONGOPASS)
 banco = cliente['monitor-database']

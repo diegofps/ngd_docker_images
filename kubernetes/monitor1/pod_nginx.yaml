@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: monitor1-nginx
+  labels:
+    app: monitor1-nginx
+spec:
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+              - node1
+              - node1.local
+  restartPolicy: Always
+  containers:
+    - name: monitor1-nginx
+      image: nginx:latest
+      ports:
+        - name: web
+          containerPort: 8000
+          protocol: TCP
+      volumeMounts:
+        - name: config-volume
+          mountPath: /etc/nginx/
+  volumes:
+    - name: config-volume
+      configMap:
+        name: monitor1-configmap-nginx

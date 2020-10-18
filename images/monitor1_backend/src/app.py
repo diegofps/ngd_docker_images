@@ -45,8 +45,9 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 
 
 def rabbit_callback(ch, method, properties, body):
+    print("received RabbitMQ message, forwarding to /api/broadcast")
     headers = {'content-type': 'application/json'}
-    requests.post("http://localhost:5000/api/broadcast", data=body, headers=headers)
+    requests.post("http://localhost:8081/api/broadcast", data=body, headers=headers)
 
 # Connect to rabbitmq
 def main_rabbit():

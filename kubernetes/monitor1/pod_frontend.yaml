@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: monitor1-frontend
+  labels:
+    app: monitor1-frontend
+spec:
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+              - node3
+              - node3.local
+  restartPolicy: Always
+  hostname: frontend
+  subdomain: monitor1
+  containers:
+  - name: monitor1-frontend
+    image: diegofpsouza/monitor1-frontend:0.0.1
+    imagePullPolicy: Always
+    ports:
+      - name: web
+        containerPort: 8080
+        protocol: TCP

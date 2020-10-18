@@ -8,4 +8,4 @@ COPY src .
 
 RUN cp /libfacedetection/libpyfacedetection.so /app
 
-CMD ["./main.py"]
+CMD ["python3", "/app/main.py"]

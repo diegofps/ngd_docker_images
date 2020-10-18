@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: monitor1-backend
+  labels:
+    app: monitor1-backend
+spec:
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+              - node2
+              - node2.local
+  restartPolicy: Always
+  containers:
+  - name: monitor1-backend
+    image: diegofpsouza/monitor1-backend:0.0.1
+    imagePullPolicy: Always
+    ports:
+      - name: web
+        containerPort: 8081
+        protocol: TCP
+    env:
+      - name: FLASK_ENV
+        value: production
+      - name: RABBITMQSERVER
+        value: monitor1-rabbit-svc.default.svc.cluster.local
+      - name: MONGOSERVER
+        value: monitor1-mongo-svc.default.svc.cluster.local
+      - name: MONGOUSER
+        value: mongoadmin
+      - name: MONGOPASS
+        value: secret
+      - name: MONGOPORT
+        value: "27017"

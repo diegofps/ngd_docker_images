@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: monitor1-monitor
+  labels:
+    app: monitor1-monitor
+spec:
+  selector:
+    matchLabels:
+      name: monitor1-monitor
+  template:
+    metadata:
+      labels:
+        name: monitor1-monitor
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: kubernetes.io/arch
+                  operator: In
+                  values:
+                  - arm64
+      containers:
+      - name: monitor1-monitor
+        image: diegofpsouza/monitor1-monitor:0.0.1
+        imagePullPolicy: Always
+        volumeMounts:
+        - name: storage
+          mountPath: /target
+        env:
+          - name: HOSTHOSTNAME
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.nodeName
+          - name: HOSTTARGET
+            value: /media/storage
+          - name: TARGET
+            value: /target
+          - name: MONGOSERVER
+            value: monitor1-mongo-svc.default.svc.cluster.local
+          - name: MONGOUSER
+            value: mongoadmin
+          - name: MONGOPASS
+            value: secret
+          - name: MONGOPORT
+            value: "27017"
+          - name: RABBITMQSERVER
+            value: monitor1-rabbit-svc.default.svc.cluster.local
+      volumes:
+      - name: storage
+        hostPath:
+          path: /media/storage

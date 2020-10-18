@@ -1,0 +1,44 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: monitor1-cron
+spec:
+  schedule: "*/10 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          affinity:
+            nodeAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                nodeSelectorTerms:
+                  - matchExpressions:
+                    - key: kubernetes.io/hostname
+                      operator: In
+                      values:
+                      - node4
+                      - node4.local
+          restartPolicy: OnFailure
+          containers:
+          - name: monitor1-cron
+            image: diegofpsouza/monitor1-cron:0.0.1
+            volumeMounts:
+            - name: storage-cron
+              mountPath: /target_cron
+            env:
+              - name: TARGET
+                value: /target_cron
+              - name: MONGOSERVER
+                value: monitor1-mongo-svc.default.svc.cluster.local
+              - name: MONGOUSER
+                value: mongoadmin
+              - name: MONGOPASS
+                value: secret
+              - name: MONGOPORT
+                value: "27017"
+              - name: BUFFERSIZE
+                value: "10000"
+          volumes:
+          - name: storage-cron
+            hostPath:
+              path: /media/storage_cron
