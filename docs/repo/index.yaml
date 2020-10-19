@@ -1,11 +1,22 @@
 apiVersion: v1
 entries:
+  MonitorOne:
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2020-10-18T22:43:38.919856889-03:00"
+    description: Folder monitor with image interpreter and indexing for Newport Devices
+    digest: 2dad7517ce95fc4981af935b8f3d4baa695fd2c254b34eba9a1d442d6319faf7
+    name: MonitorOne
+    type: application
+    urls:
+    - https://diegofps.github.io/ngd_docker_images/repo/MonitorOne-0.1.0.tgz
+    version: 0.1.0
   demo_ws_telemetry:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2020-09-30T17:55:27.188642377-03:00"
+    created: "2020-10-18T22:43:38.920059894-03:00"
     description: A Helm chart for Kubernetes
-    digest: 4089f3a0520b0e423aef68f1cd34471713d74f9d6e22f9007df26a0f9b935500
+    digest: fbd2f81e25e0bcd55579d680119a0c3e0dd4821be86fe22ca5885df3aa0eac8f
     name: demo_ws_telemetry
     type: application
     urls:
@@ -14,9 +25,9 @@ entries:
   facedetection:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2020-09-30T17:55:27.189133436-03:00"
+    created: "2020-10-18T22:43:38.920313163-03:00"
     description: Face detection for heterogeneous clusters (amd64 and arm64)
-    digest: ea5cd0a87d0b7dd91893f0e3e2cf3de18f602faabe7f22c73bf0d1d6d726937d
+    digest: 9b43f3af97b727738cf1b061cb09f29531281a887818c495390d6bfb84dcd5d4
     name: facedetection
     type: application
     urls:
@@ -25,9 +36,9 @@ entries:
   openalpr:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2020-09-30T17:55:27.189588037-03:00"
+    created: "2020-10-18T22:43:38.921821319-03:00"
     description: License plate recognition for heterogeneous clusters (amd64 and arm64)
-    digest: 2f24e31b05b5408bad372c180df956d6a70aadde4fae7f2c92a4f289802e8fa4
+    digest: 8f5bd15439c6d96ef7866fac42e7451b1a740bb42ad0c2bf638e12cadf004686
     name: openalpr
     type: application
     urls:
@@ -36,12 +47,12 @@ entries:
   tesseract:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2020-09-30T17:55:27.19004383-03:00"
+    created: "2020-10-18T22:43:38.922309964-03:00"
     description: OCR for heterogeneous clusters (amd64 and arm64)
-    digest: 35073f19a94ca7c749a590798287414bccba31462fff246f9bb362faf285827b
+    digest: 9eee42fa7046485767d26d492ff8699fc04873a2f7577169a27aa9b6901b89d7
     name: tesseract
     type: application
     urls:
     - https://diegofps.github.io/ngd_docker_images/repo/tesseract-0.1.0.tgz
     version: 0.1.0
-generated: "2020-09-30T17:55:27.186559363-03:00"
+generated: "2020-10-18T22:43:38.919369827-03:00"
