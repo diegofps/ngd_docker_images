@@ -1,0 +1,16 @@
+{{- $rabbit := include "rabbit" . -}}
+{{- $rabbitSvcName := include "rabbitSvcName" . -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $rabbitSvcName }}
+  namespace: {{ .Values.namespace }}
+spec:
+  selector:
+    app: {{ $rabbit }}
+  ports:
+    - protocol: TCP
+      port: 5672
+      targetPort: 5672
+  clusterIP: None
+  type: ClusterIP

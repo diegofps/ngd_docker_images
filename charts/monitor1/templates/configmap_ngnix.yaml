@@ -1,8 +1,11 @@
+{{- $configNginx := include "configNginx" . -}}
+{{- $backendSvc := include "backendSvc" . -}}
+{{- $frontendSvc := include "frontendSvc" . -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: monitor1-configmap-nginx
-  namespace: default
+  name: {{ $configNginx }}
+  namespace: {{ .Values.namespace }}
 data:
   nginx.conf: |
     events {
@@ -21,15 +24,15 @@ data:
                 proxy_buffering off;
                 proxy_set_header Upgrade $http_upgrade;
                 proxy_set_header Connection "Upgrade";
-                proxy_pass http://monitor1-backend-svc.default.svc.cluster.local:8081/socket.io;
+                proxy_pass http://{{ $backendSvc }}:8081/socket.io;
             }
             
             location /api {
-                proxy_pass http://monitor1-backend-svc.default.svc.cluster.local:8081/api;
+                proxy_pass http://{{ $backendSvc }}:8081/api;
             }
             
             location / {
-                proxy_pass http://monitor1-frontend-svc.default.svc.cluster.local:8080;
+                proxy_pass http://{{ $frontendSvc }}:8080;
             }
         }
     }

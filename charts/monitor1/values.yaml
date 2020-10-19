@@ -1,0 +1,14 @@
+namespace: dev
+
+cron:
+  schedule: "*/10 * * * *"
+  hosttarget: "/media/storage_cron"
+  buffersize: "10000"
+
+monitor:
+  hosttarget: "/media/storage"
+
+mongo:
+  user: mongoadmin
+  pass: secret
+  port: "27017"

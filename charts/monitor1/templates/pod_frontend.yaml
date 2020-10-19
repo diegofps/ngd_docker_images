@@ -1,10 +1,11 @@
+{{- $frontend := include "frontend" . -}}
 apiVersion: v1
 kind: Pod
 metadata:
-  name: monitor1-frontend
-  namespace: default
+  name: {{ $frontend }}
+  namespace: {{ .Values.namespace }}
   labels:
-    app: monitor1-frontend
+    app: {{ $frontend }}
 spec:
   affinity:
     nodeAffinity:
@@ -18,7 +19,7 @@ spec:
               - node3.local
   restartPolicy: Always
   containers:
-  - name: monitor1-frontend
+  - name: {{ $frontend }}
     image: diegofpsouza/monitor1-frontend:0.0.1
     imagePullPolicy: Always
     ports:

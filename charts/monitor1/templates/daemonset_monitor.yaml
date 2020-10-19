@@ -1,18 +1,21 @@
+{{- $monitor := include "monitor" . -}}
+{{- $mongoSvc := include "mongoSvc" . -}}
+{{- $rabbitSvc := include "rabbitSvc" . -}}
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: monitor1-monitor
-  namespace: default
+  name: {{ $monitor }}
+  namespace: {{ .Values.namespace }}
   labels:
-    app: monitor1-monitor
+    app: {{ $monitor }}
 spec:
   selector:
     matchLabels:
-      name: monitor1-monitor
+      name: {{ $monitor }}
   template:
     metadata:
       labels:
-        name: monitor1-monitor
+        name: {{ $monitor }}
     spec:
       affinity:
         nodeAffinity:
@@ -23,8 +26,9 @@ spec:
                   operator: In
                   values:
                   - arm64
+      terminationGracePeriodSeconds: 5
       containers:
-      - name: monitor1-monitor
+      - name: {{ $monitor }}
         image: diegofpsouza/monitor1-monitor:0.0.1
         imagePullPolicy: Always
         volumeMounts:
@@ -36,20 +40,20 @@ spec:
               fieldRef:
                 fieldPath: spec.nodeName
           - name: HOSTTARGET
-            value: /media/storage
+            value: {{ .Values.monitor.hosttarget }}
           - name: TARGET
             value: /target
           - name: MONGOSERVER
-            value: monitor1-mongo-svc.default.svc.cluster.local
+            value: {{ $mongoSvc }}
           - name: MONGOUSER
-            value: mongoadmin
+            value: {{ .Values.mongo.user }}
           - name: MONGOPASS
-            value: secret
+            value: {{ .Values.mongo.pass }}
           - name: MONGOPORT
-            value: "27017"
+            value: {{ .Values.mongo.port | quote }}
           - name: RABBITMQSERVER
-            value: monitor1-rabbit-svc.default.svc.cluster.local
+            value: {{ $rabbitSvc }}
       volumes:
       - name: storage
         hostPath:
-          path: /media/storage
+          path: {{ .Values.monitor.hosttarget }}

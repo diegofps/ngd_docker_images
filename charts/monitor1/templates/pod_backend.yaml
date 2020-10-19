@@ -1,10 +1,13 @@
+{{- $backend := include "backend" . -}}
+{{- $mongoSvc := include "mongoSvc" . -}}
+{{- $rabbitSvc := include "rabbitSvc" . -}}
 apiVersion: v1
 kind: Pod
 metadata:
-  name: monitor1-backend
-  namespace: default
+  name: {{ $backend }}
+  namespace: {{ .Values.namespace }}
   labels:
-    app: monitor1-backend
+    app: {{ $backend }}
 spec:
   affinity:
     nodeAffinity:
@@ -18,7 +21,7 @@ spec:
               - node2.local
   restartPolicy: Always
   containers:
-  - name: monitor1-backend
+  - name: {{ $backend }}
     image: diegofpsouza/monitor1-backend:0.0.1
     imagePullPolicy: Always
     ports:
@@ -29,12 +32,12 @@ spec:
       - name: FLASK_ENV
         value: production
       - name: RABBITMQSERVER
-        value: monitor1-rabbit-svc.default.svc.cluster.local
+        value: {{ $rabbitSvc }}
       - name: MONGOSERVER
-        value: monitor1-mongo-svc.default.svc.cluster.local
+        value: {{ $mongoSvc }}
       - name: MONGOUSER
-        value: mongoadmin
+        value: {{ .Values.mongo.user }}
       - name: MONGOPASS
-        value: secret
+        value: {{ .Values.mongo.pass }}
       - name: MONGOPORT
-        value: "27017"
+        value: {{ .Values.mongo.port | quote }}

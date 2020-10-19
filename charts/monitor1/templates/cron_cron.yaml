@@ -1,10 +1,12 @@
+{{- $cron := include "cron" . -}}
+{{- $mongoSvc := include "mongoSvc" . -}}
 apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
-  name: monitor1-cron
-  namespace: default
+  name: {{ $cron }}
+  namespace: {{ .Values.namespace }}
 spec:
-  schedule: "*/10 * * * *"
+  schedule: {{ .Values.cron.schedule | quote }}
   jobTemplate:
     spec:
       template:
@@ -21,7 +23,7 @@ spec:
                       - node4.local
           restartPolicy: OnFailure
           containers:
-          - name: monitor1-cron
+          - name: {{ $cron }}
             image: diegofpsouza/monitor1-cron:0.0.1
             volumeMounts:
             - name: storage-cron
@@ -30,16 +32,16 @@ spec:
               - name: TARGET
                 value: /target_cron
               - name: MONGOSERVER
-                value: monitor1-mongo-svc.default.svc.cluster.local
+                value: {{ $mongoSvc }}
               - name: MONGOUSER
-                value: mongoadmin
+                value: {{ .Values.mongo.user }}
               - name: MONGOPASS
-                value: secret
+                value: {{ .Values.mongo.pass }}
               - name: MONGOPORT
-                value: "27017"
+                value: {{ .Values.mongo.port | quote }}
               - name: BUFFERSIZE
-                value: "10000"
+                value: {{ .Values.cron.buffersize | quote }}
           volumes:
           - name: storage-cron
             hostPath:
-              path: /media/storage_cron
+              path: {{ .Values.cron.hosttarget }}

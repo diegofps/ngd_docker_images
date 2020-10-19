@@ -1,10 +1,12 @@
+{{- $configNginx := include "configNginx" . -}}
+{{- $nginx := include "nginx" . -}}
 apiVersion: v1
 kind: Pod
 metadata:
-  name: monitor1-nginx
-  namespace: default
+  name: {{ $nginx }}
+  namespace: {{ .Values.namespace }}
   labels:
-    app: monitor1-nginx
+    app: {{ $nginx }}
 spec:
   affinity:
     nodeAffinity:
@@ -18,7 +20,7 @@ spec:
               - node1.local
   restartPolicy: Always
   containers:
-    - name: monitor1-nginx
+    - name: {{ $nginx }}
       image: nginx:latest
       ports:
         - name: web
@@ -30,4 +32,4 @@ spec:
   volumes:
     - name: config-volume
       configMap:
-        name: monitor1-configmap-nginx
+        name: {{ $configNginx }}

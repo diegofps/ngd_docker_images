@@ -1,10 +1,11 @@
+{{- $mongo := include "mongo" . -}}
 apiVersion: v1
 kind: Pod
 metadata:
-  name: monitor1-mongo
-  namespace: default
+  name: {{ $mongo }}
+  namespace: {{ .Values.namespace }}
   labels:
-    app: monitor1-mongo
+    app: {{ $mongo }}
 spec:
   affinity:
     nodeAffinity:
@@ -19,15 +20,15 @@ spec:
             - host.local
   restartPolicy: Always
   containers:
-  - name: monitor1-mongo
+  - name: {{ $mongo }}
     image: mongo:latest
     ports:
       - name: web
-        containerPort: 27017
+        containerPort: {{ .Values.mongo.port }}
         protocol: TCP
     env:
       - name: MONGO_INITDB_ROOT_USERNAME
-        value: mongoadmin
+        value: {{ .Values.mongo.user }}
       - name: MONGO_INITDB_ROOT_PASSWORD
-        value: secret
+        value: {{ .Values.mongo.pass }}
 

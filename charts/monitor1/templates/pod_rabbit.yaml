@@ -1,10 +1,11 @@
+{{- $rabbit := include "rabbit" . -}}
 apiVersion: v1
 kind: Pod
 metadata:
-  name: monitor1-mongo
-  namespace: default
+  name: {{ $rabbit }}
+  namespace: {{ .Values.namespace }}
   labels:
-    app: monitor1-mongo
+    app: {{ $rabbit }}
 spec:
   affinity:
     nodeAffinity:
@@ -19,15 +20,9 @@ spec:
             - host.local
   restartPolicy: Always
   containers:
-  - name: monitor1-mongo
-    image: mongo:latest
+  - name: {{ $rabbit }}
+    image: rabbitmq:3
     ports:
       - name: web
-        containerPort: 27017
+        containerPort: 5672
         protocol: TCP
-    env:
-      - name: MONGO_INITDB_ROOT_USERNAME
-        value: mongoadmin
-      - name: MONGO_INITDB_ROOT_PASSWORD
-        value: secret
-

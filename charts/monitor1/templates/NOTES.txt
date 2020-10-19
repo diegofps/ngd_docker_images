@@ -1,0 +1,22 @@
+Done! :)
+
+To change to the namespace used:
+sudo kubectl config set-context --current --namespace={{ .Values.namespace }}
+
+To list all deployed elements:
+sudo kubectl get pod -o wide
+sudo kubectl get daemonset -o wide
+sudo kubectl get configmap -o wide
+sudo kubectl get svc -o wide
+sudo kubectl get cronjob -o wide
+
+Open your browser at:
+http://localhost:8000
+
+Now copy an image to a node and see the magic happen (replace NODE1 with your node1 name):
+NODE1=rasp108
+scp ~/Sources/demo_openalpr/datasets/face/test2.jpg ${NODE1}:/media/storage
+
+To view to output of the cronjob (replace NODE4 with your node4 name) (you may need to wait up to 10 minutes):
+NODE4=rasp146
+ssh ${NODE4} 'ls -la /media/storage_cron'
