@@ -23,6 +23,7 @@ spec:
           containers:
           - name: monitor1-cron
             image: diegofpsouza/monitor1-cron:0.0.1
+            imagePullPolicy: Always
             volumeMounts:
             - name: storage-cron
               mountPath: /target_cron
