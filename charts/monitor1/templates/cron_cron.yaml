@@ -1,5 +1,6 @@
 {{- $cron := include "cron" . -}}
 {{- $mongoSvc := include "mongoSvc" . -}}
+{{- $rabbitSvc := include "rabbitSvc" . -}}
 apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
@@ -41,6 +42,8 @@ spec:
                 value: {{ .Values.mongo.port | quote }}
               - name: BUFFERSIZE
                 value: {{ .Values.cron.buffersize | quote }}
+              - name: RABBITMQSERVER
+                value: {{ $rabbitSvc }}
           volumes:
           - name: storage-cron
             hostPath:

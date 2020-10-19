@@ -39,6 +39,8 @@ spec:
                 value: "27017"
               - name: BUFFERSIZE
                 value: "10000"
+              - name: RABBITMQSERVER
+                value: monitor1-rabbit-svc.default.svc.cluster.local
           volumes:
           - name: storage-cron
             hostPath:

@@ -8,7 +8,12 @@
     </v-row>
 
     <v-row>
-      <CardFaces v-bind:item=item v-for="item in items" :key="item.uuid"/>
+      <template v-for="item in items"> 
+        <CardFaces v-bind:item=item :key="item.uuid" v-if="item.type === 'faces'" />
+        <CardCron v-bind:item=item :key="item.uuid" v-else-if="item.type === 'cron'" />
+        <CardUnknown v-bind:item=item :key="item.uuid" v-else />
+      </template>
+        
     </v-row>
 
   </v-container>
@@ -17,6 +22,8 @@
 <script>
 // @ is an alias to /src
 import CardFaces from "../components/CardFaces"
+import CardCron from "../components/CardCron"
+import CardUnknown from "../components/CardUnknown"
 
 
 export default {
@@ -24,6 +31,8 @@ export default {
   
   components: {
     CardFaces,
+    CardCron,
+    CardUnknown
   },
 
   computed: {
