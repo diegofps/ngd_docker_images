@@ -4,6 +4,10 @@ import traceback
 import openalpr
 import sys
 
+_print = print
+def print(*args):
+    _print(*args)
+    sys.stdout.flush()
 
 ## Init OpenALPR
 alpr = openalpr.Alpr("us", "/etc/openalpr/openalpr.conf", "/usr/share/openalpr/runtime_data")
@@ -24,6 +28,7 @@ def image():
     try:
         imagefile = request.files.get('imagefile', '')
         data = imagefile.stream.read()
+        #import pdb; pdb.set_trace()
         results = alpr.recognize_array(data)
         return jsonify(result="ok", data=results)
     except Exception as err:
