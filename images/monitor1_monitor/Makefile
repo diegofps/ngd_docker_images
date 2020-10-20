@@ -10,4 +10,4 @@ local:
 	docker run -v $(HOSTTARGET):/target --name $(CONTAINERNAME) --env HOSTHOSTNAME=$(HOSTHOSTNAME) --env HOSTTARGET=$(HOSTTARGET) --env MONGOSERVER=$(HOSTIP) --env RABBITMQSERVER=$(HOSTIP) $(IMAGENAME)
 
 remote:
-	docker buildx build --platform linux/amd64,linux/arm64 --push=true --no-cache -t diegofpsouza/$(IMAGENAME) .
+	docker buildx build --platform linux/amd64,linux/arm64 --push=true -t diegofpsouza/$(IMAGENAME) .

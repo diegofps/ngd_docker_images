@@ -5,7 +5,7 @@
         <v-row>
             <v-col cols="12">
                 <v-card-title>Unknown Event</v-card-title>
-                <v-card-subtitle> {{ item.type }} </v-card-subtitle>
+                <v-card-subtitle> type: {{ item.type }} </v-card-subtitle>
             </v-col>
         </v-row>
     </v-container>

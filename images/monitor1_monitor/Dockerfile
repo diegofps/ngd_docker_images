@@ -4,8 +4,20 @@ RUN pip3 install pyinotify pymongo pika
 
 WORKDIR /app
 
-COPY src .
-
 RUN cp /libfacedetection/libpyfacedetection.so /app
 
-CMD ["python3", "/app/main.py"]
+RUN apt update && apt install libopencv-dev libtesseract-dev \
+    git cmake build-essential libleptonica-dev liblog4cplus-dev libcurl3-dev beanstalkd \
+    python3 python3-pip python3-dev -yq
+
+WORKDIR /src
+
+COPY src/build*.sh .
+
+RUN /src/build_install_openalpr.sh
+
+WORKDIR /app
+
+COPY ./src .
+
+CMD ["/app/main.py"]

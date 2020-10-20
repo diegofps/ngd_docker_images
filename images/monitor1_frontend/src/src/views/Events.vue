@@ -9,7 +9,7 @@
 
     <v-row>
       <template v-for="item in items"> 
-        <CardFaces v-bind:item=item :key="item.uuid" v-if="item.type === 'faces'" />
+        <CardMonitor v-bind:item=item :key="item.uuid" v-if="item.type === 'monitor'" />
         <CardCron v-bind:item=item :key="item.uuid" v-else-if="item.type === 'cron'" />
         <CardUnknown v-bind:item=item :key="item.uuid" v-else />
       </template>
@@ -21,7 +21,7 @@
 
 <script>
 // @ is an alias to /src
-import CardFaces from "../components/CardFaces"
+import CardMonitor from "../components/CardMonitor"
 import CardCron from "../components/CardCron"
 import CardUnknown from "../components/CardUnknown"
 
@@ -30,7 +30,7 @@ export default {
   name: 'Events',
   
   components: {
-    CardFaces,
+    CardMonitor,
     CardCron,
     CardUnknown
   },

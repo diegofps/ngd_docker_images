@@ -5,6 +5,7 @@ from pyfacedetectioncnn import FaceDetectionCNN
 
 import pyinotify
 import traceback
+import openalpr
 import datetime
 import asyncio
 import socket
@@ -27,6 +28,24 @@ MONGOPASS = os.getenv('MONGOPASS', 'secret')
 MONGOPORT = int(os.getenv('MONGOPORT', '27017'))
 RABBITMQSERVER = os.getenv('RABBITMQSERVER', '192.168.1.138')
 
+print("--- PARAMS ---")
+print("RABBITMQSERVER:", RABBITMQSERVER)
+print("MONGOSERVER:", MONGOSERVER)
+
+print("Starting FaceDetectionCNN")
+fc = FaceDetectionCNN()
+
+print("Starting alpr")
+alpr = openalpr.Alpr("us", "/etc/openalpr/openalpr.conf", "/usr/share/openalpr/runtime_data")
+
+if not alpr.is_loaded():
+    print("Error loading OpenALPR")
+    sys.exit(1)
+
+alpr.set_top_n(20)
+alpr.set_default_region("md")
+
+print("Starting pika")
 while True:
     try:
         connection = pika.BlockingConnection(pika.ConnectionParameters(RABBITMQSERVER))
@@ -37,17 +56,35 @@ while True:
         print("Failed to connect to RabbitMQ, retrying in 5s")
         time.sleep(5)
 
-
+print("Starting MongoClient")
 cliente = MongoClient(MONGOSERVER, port=MONGOPORT, username=MONGOUSER, password=MONGOPASS)
 banco = cliente['monitor-database']
 album = banco['events']
 
-fc = FaceDetectionCNN()
 
-print("--- Starting monitor ---")
-print("RABBITMQSERVER:", RABBITMQSERVER)
-print("MONGOSERVER:", MONGOSERVER)
+def human_time(value):
+    value = float(value * 1000 * 1000)
+    if value < 1000:
+        return "{:.2f} us".format(value)
+    
+    value /= 1000
+    if value < 1000:
+        return "{:.2f} ms".format(value)
 
+    value /= 1000
+    if value < 60:
+        return "{:.2f} s".format(value)
+
+    value /= 60
+    if value < 60:
+        return "{:.2f} m".format(value)
+
+    value /= 60
+    if value < 24:
+        return "{:.2f} h".format(value)
+    
+    value /= 24
+    return "{:.2f} d".format(value)
 
 def reconnect_rabbitmq():
     global connection
@@ -71,8 +108,29 @@ def encode_image(img, max_size):
     return str(base64.b64encode(bytes(buffer)), 'utf-8')
 
 
-def prepare_response(img, pathname, faces):
+def get_plate_coords(data, key):
+    v1, v2 = None, None
+
+    for obj in data['coordinates']:
+        v = obj[key]
+
+        if v1 is None:
+            v1 = v
+            v2 = v
+            continue
+    
+        if v < v1:
+            v1 = v
+        
+        if v > v2:
+            v2 = v
+
+    return v1, v2
+
+
+def prepare_response(img, pathname, ellapsed, faces, plates):
     faces2 = []
+    plates2 = []
 
     for data in faces:
         c = data['confidence']
@@ -97,14 +155,42 @@ def prepare_response(img, pathname, faces):
                 'b64image': encode_image(img2, 64)
         })
     
+    for data in plates['results']:
+        candidates = data['candidates']
+        p1 = candidates[0]['plate']
+        c1 = candidates[0]['confidence']
+        p2 = candidates[1]['plate']
+        c2 = candidates[1]['confidence']
+        p3 = candidates[2]['plate']
+        c3 = candidates[2]['confidence']
+
+        x1, x2 = get_plate_coords(data, 'x')
+        y1, y2 = get_plate_coords(data, 'y')
+
+        img2 = img[y1:y2, x1:x2]
+
+        plates2.append({
+            'uuid': str(uuid.uuid4()),
+            'rect': [x1, y1, x2-x1, y2-y1],
+            'b64image': encode_image(img2, 64),
+            'p1': p1,
+            'c1': c1,
+            'p2': p2,
+            'c2': c2,
+            'p3': p3,
+            'c3': c3
+        })
+
     response = {
         'uuid': str(uuid.uuid4()),
         'hostname': HOSTHOSTNAME,
         'path': pathname.replace(TARGET, HOSTTARGET, 1),
         'created_at': datetime.datetime.now(),
         'b64image': encode_image(img, 256),
-        'type': 'faces',
-        'faces': faces2
+        'ellapsed': human_time(ellapsed), 
+        'type': 'monitor',
+        'faces': faces2,
+        'plates': plates2
     }
 
     #print("bundle:", response)
@@ -141,13 +227,19 @@ def process_file(pathname):
     size = os.path.getsize(pathname)
 
     if size >= 140:
-        img = cv2.imread(pathname, cv2.IMREAD_COLOR)
+        start_time = time.monotonic()
 
+        img = cv2.imread(pathname, cv2.IMREAD_COLOR)
         fc.read(img)
         faces = fc.result()
         print("faces detected:", faces)
 
-        response = prepare_response(img, pathname, faces)        
+        plates = alpr.recognize_file(pathname)
+        print("License plates detected:", faces)
+
+        ellapsed = time.monotonic() - start_time
+
+        response = prepare_response(img, pathname, ellapsed, faces, plates)
         send_to_mongo(response)
         send_to_rabbitmq(response)
         sys.stdout.flush()
@@ -168,12 +260,13 @@ class Handler(pyinotify.ProcessEvent):
             print("sorry :/")
         sys.stdout.flush()
 
-
+print("Starting WatchManager")
 wm = pyinotify.WatchManager()
 handler = Handler()
 notifier = pyinotify.Notifier(wm, default_proc_fun=handler)
 wm.add_watch(TARGET, pyinotify.IN_CLOSE_WRITE)
 
+print("Starting loop")
 notifier.loop()
 notifier.stop()
 

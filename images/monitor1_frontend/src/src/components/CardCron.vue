@@ -3,7 +3,7 @@
     <v-img
         class="white--text align-end"
         height="70px"
-        src="https://cdn.vuetifyjs.com/images/cards/docks.jpg"
+        src="@/assets/vacation.jpg"
         >
         <v-card-title>
             Cron Parquet Export 
