@@ -1,15 +1,14 @@
-{{- $appname := include "openalpr.fullname" . -}}
-{{- $svcname := printf "svc-%s" $appname -}}
-{{- $proxyname := printf "%s-loadbalancer" $appname -}}
+{{- $loadbalancerSvc := include "loadbalancerSvc" . -}}
+{{- $loadbalancer := include "loadbalancer" . -}}
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ $svcname }}
+  name: {{ $loadbalancerSvc }}
 spec:
   selector:
-    app: {{ $proxyname }}
+    app: {{ $loadbalancer }}
   ports:
     - protocol: TCP
       port: {{ .Values.loadbalancer.port }}
-      targetPort: {{ .Values.loadbalancer.port }}
+      targetPort: 4570
   type: LoadBalancer

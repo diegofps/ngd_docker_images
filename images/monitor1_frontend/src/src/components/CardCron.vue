@@ -6,7 +6,7 @@
         src="@/assets/vacation.jpg"
         >
         <v-card-title>
-            Cron Parquet Export 
+            Cron Parquet Backup 
             <div class="orange--text ml-2">
                 {{ item.ellapsed }}
             </div>

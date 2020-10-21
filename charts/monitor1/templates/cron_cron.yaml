@@ -20,8 +20,8 @@ spec:
                     - key: kubernetes.io/hostname
                       operator: In
                       values:
-                      - node4
-                      - node4.local
+                      - {{ .Values.cron.node }}
+                      - {{ .Values.cron.node }}.local
           restartPolicy: OnFailure
           containers:
           - name: {{ $cron }}

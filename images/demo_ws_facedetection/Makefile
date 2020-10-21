@@ -1,7 +1,10 @@
-all: local
+CONTAINERNAME=facedetection
+IMAGENAME=demo_ws_facedetection:0.0.1
 
 local:
-	docker build -t test:v0 .
+	docker rm -f $(CONTAINERNAME) || true
+	docker build -t $(IMAGENAME) .
+	docker run --name $(CONTAINERNAME) -p 4568:4568 $(IMAGENAME)
 
 remote:
-	docker buildx build --platform linux/amd64,linux/arm64 --push=true -t diegofpsouza/demo_ws_facedetection:0.0.1 .
+	docker buildx build --platform linux/amd64,linux/arm64 --push=true -t diegofpsouza/$(IMAGENAME) .

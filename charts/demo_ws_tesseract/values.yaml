@@ -3,21 +3,14 @@
 # Declare variables to be passed into your templates.
 
 app:
-  label: demo-ws-tesseract
-  source: diegofpsouza
-  name: demo_ws_tesseract
-  tag: 0.0.1
-  csd_pods: 56
-  host_pods: 64
+  image: diegofpsouza/demo_ws_tesseract:0.0.1
+  deploy: hybrid
   port: 4568
 
 loadbalancer:
-  source: diegofpsouza
-  name: loadbalancer
-  tag: 0.0.1
-  pods: 1
+  image: diegofpsouza/loadbalancer:0.0.1
   apiserver: https://10.1.1.1:6443
   strategy: ADAPTIVE_WEIGHT
-  port: 4570
+  port: 4572
   apiserverkeys: /home/ngd/.ngd/keys
 

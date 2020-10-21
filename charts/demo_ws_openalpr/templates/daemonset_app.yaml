@@ -1,0 +1,38 @@
+{{- $app := include "app" . -}}
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ $app }}
+  labels:
+    app: {{ $app }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ $app }}
+  template:
+    metadata:
+      labels:
+        app: {{ $app }}
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: kubernetes.io/arch
+                  operator: In
+                  values:
+                  {{- if eq .Values.app.deploy "hybrid" }}
+                  - arm64
+                  - amd64
+                  {{- else if eq .Values.app.deploy "csd" }}
+                  - arm64
+                  {{- else if eq .Values.app.deploy "host" }}
+                  - amd64
+                  {{- end }}
+      containers:
+      - name: {{ $app }}
+        image: {{ .Values.app.image }}
+        imagePullPolicy: Always
+        ports:
+        - containerPort: {{ .Values.app.port }}

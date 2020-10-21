@@ -12,6 +12,14 @@ mkdir -p ~/.ngd/keys && sudo cp \
 
 # Charts
 
+## telemetry
+
+Make sure you are running telemetry, this is required by openalpr, facedetection and tesseract
+
+```bash
+helm install telemetry demo_ws_telemetry
+```
+
 ## openalpr
 
 To install it
@@ -38,8 +46,23 @@ helm install tesseract demo_ws_tesseract \
     --set loadbalancer.apiserver=https://10.20.31.92:6443
 ```
 
-## telemetry
+## monitor1
 
 ```bash
-helm install telemetry demo_ws_telemetry
+# Make sure all your nodes have the target folder, which will be monitored
+parallel-ssh -h ~/nodes -i -t 0 'sudo mkdir -p /media/storage'
+
+# Make sure your cron node has the output folder, where it will save the exported parquet files
+ssh node4 'sudo mkdir -p /media/storage_cron && sudo chmod 777 /media/storage_cron'
+
+# Start the monitor with basic configuration
+helm install mad monitor1
+
+# Start the monitor customizing some configurations
+helm install mad monitor1 \
+    --set monitor.hosttarget="/media/storage" \
+    --set cron.schedule='*/10 * * * *' \
+    --set cron.hosttarget="/media/storage_cron" \
+    --set cron.buffersize=10000 \
+    --set cron.node=node4
 ```

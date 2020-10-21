@@ -8,6 +8,8 @@ COPY libfacedetection .
 
 RUN ./build.sh lib && ./build.sh deploy
 
+RUN pip3 install gunicorn
+
 ENV PYTHONPATH="/libfacedetection"
 
 WORKDIR /project
@@ -16,4 +18,5 @@ COPY src .
 
 EXPOSE 4568
 
-CMD ["flask", "run", "--host=0.0.0.0", "--port=4568", "--without-threads"]
+#CMD ["flask", "run", "--host=0.0.0.0", "--port=4568", "--without-threads"]
+CMD ["bash", "/project/run.sh"]

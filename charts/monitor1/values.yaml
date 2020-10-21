@@ -1,9 +1,11 @@
 namespace: dev
+port: 8000
 
 cron:
   schedule: "*/10 * * * *"
   hosttarget: "/media/storage_cron"
   buffersize: "10000"
+  node: node4
 
 monitor:
   hosttarget: "/media/storage"

@@ -1,42 +1,40 @@
-{{- $fullname := include "openalpr.fullname" . -}}
-{{- $lbname := printf "%s-loadbalancer" $fullname -}}
-{{- $labelname := printf "%s-%s" $fullname .Values.app.label -}}
+{{- $loadbalancer := include "loadbalancer" . -}}
+{{- $app := include "app" . -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ $lbname }}
+  name: {{ $loadbalancer }}
   labels:
-    app: {{ $lbname }}
+    app: {{ $loadbalancer }}
 spec:
-  replicas: {{ .Values.loadbalancer.pods }}
+  replicas: 1
   selector:
     matchLabels:
-      app: {{ $lbname }}
+      app: {{ $loadbalancer }}
   template:
     metadata:
       labels:
-        app: {{ $lbname }}
+        app: {{ $loadbalancer }}
     spec:
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
             - matchExpressions:
-              - key: kubernetes.io/hostname
+              - key: kubernetes.io/arch
                 operator: In
                 values:
-                - perl
-                - host.local
+                - amd64
       containers:
-      - name: {{ $lbname }}
-        image: {{ .Values.loadbalancer.source }}/{{ .Values.loadbalancer.name }}:{{ .Values.loadbalancer.tag }}
+      - name: {{ $loadbalancer }}
+        image: {{ .Values.loadbalancer.image }}
         imagePullPolicy: Always
         volumeMounts:
         - name: keys
           mountPath: /keys
         env:
         - name: APP_NAME
-          value: {{ $labelname | quote }}
+          value: {{ $app }}
         - name: REFRESH_SECONDS
           value: "5"
         - name: API_SERVER
@@ -54,8 +52,8 @@ spec:
         - name: TIME_TO_WEIGHT
           value: "time_to_weight_3"
         ports:
-        - containerPort: {{ .Values.loadbalancer.port }}
+        - containerPort: 4570
       volumes:
       - name: keys
         hostPath:
-          path: {{ .Values.loadbalancer.apiserverkeys }}
+          path: {{ .Values.loadbalancer.apiserverkeys -}}
