@@ -44,7 +44,7 @@ class CSVDigester:
 class CSVFileDigester(CSVDigester):
 
     def __init__(self, filepath, max_buffer_size=1000):
-        super().__init__("FileDigester", filepath, max_buffer_size)
+        super().__init__("CSVFileDigester", filepath, max_buffer_size)
     
     def header(self):
         return ["_id", "uuid", "hostname", "path", "created_at", "b64image"]
@@ -63,7 +63,7 @@ class CSVFileDigester(CSVDigester):
 class CSVFaceDigester(CSVDigester):
 
     def __init__(self, filepath, max_buffer_size=1000):
-        super().__init__("FaceDigester", filepath, max_buffer_size)
+        super().__init__("CSVFaceDigester", filepath, max_buffer_size)
     
     def header(self):
         return [
@@ -95,3 +95,28 @@ class CSVFaceDigester(CSVDigester):
             data["b64image"]
         ]
 
+
+class CSVLicensePlateDigester(CSVDigester):
+
+    def __init__(self, filepath, max_buffer_size=1000):
+        super().__init__("CSVLicensePlateDigester", filepath, max_buffer_size)
+    
+    def header(self):
+        return [
+            "uuid", 
+            "file_id", 
+            "r0", "r1", "r2", "r3", 
+            "b64image", 
+            "p1", "p2", "p3", 
+            "c1", "c2", "c3", 
+        ]
+    
+    def row(self, file_id, data):
+        return [
+            data["uuid"], 
+            file_id, 
+            data["rect"][0], data["rect"][1], data["rect"][2], data["rect"][3], 
+            data["b64image"], 
+            data["p1"], data["p2"], data["p3"], 
+            data["c1"], data["c2"], data["c3"]
+        ]

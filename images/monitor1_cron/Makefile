@@ -1,3 +1,4 @@
+HOSTHOSTNAME=$(shell hostname)
 MONGOSERVER=192.168.1.138
 RABBITMQSERVER=192.168.1.138
 HOSTTARGET="$(shell pwd)/target"
@@ -11,7 +12,7 @@ local:
 run:
 	mkdir -p $(HOSTTARGET)
 	docker rm -f $(CONTAINERNAME) || true
-	docker run -v $(HOSTTARGET):/target --name $(CONTAINERNAME) --env TARGET=$(TARGET) --env MONGOSERVER=$(MONGOSERVER) --env RABBITMQSERVER=$(RABBITMQSERVER) $(IMAGENAME)
+	docker run -v $(HOSTTARGET):/target --name $(CONTAINERNAME) --env TARGET=$(TARGET) --env MONGOSERVER=$(MONGOSERVER) --env RABBITMQSERVER=$(RABBITMQSERVER) --env HOSTHOSTNAME=$(HOSTHOSTNAME) $(IMAGENAME)
 
 remote:
 	docker buildx build --platform linux/amd64,linux/arm64 --push=true -t diegofpsouza/$(IMAGENAME) .

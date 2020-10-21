@@ -6,53 +6,51 @@
         src="@/assets/pug1.jpg"
         >
         <v-card-title>
-            Monitor Result
+            File Monitor
             <div class="orange--text ml-2">
                 {{ item.ellapsed }}
             </div>
         </v-card-title>
     </v-img>
 
-    <v-container>
-        <v-row>
-            <v-col cols="4">
-                <v-card height=100%>
-                    <v-img elevation=3 height=100% :src="'data:image/jpg;base64, ' + item.b64image" />
-                </v-card>
-            </v-col>
-            <v-col cols="8">
-                <v-row>
-                    <v-col cols=6>
-                        <v-card-title>Node</v-card-title>
-                        <v-card-subtitle> {{item.hostname}} </v-card-subtitle>
-                    </v-col>
+    <v-row>
+        <v-col cols="4">
+            <v-card height=100% class="ml-4">
+                <v-img elevation=3 height=100% :src="'data:image/jpg;base64, ' + item.b64image" />
+            </v-card>
+        </v-col>
+        <v-col cols="8">
+            <v-row>
+                <v-col cols=6>
+                    <v-card-title>Node</v-card-title>
+                    <v-card-subtitle> {{item.hostname}} </v-card-subtitle>
+                </v-col>
 
-                    <v-col cols=6>
-                        <v-card-title>Parsed at</v-card-title>
-                        <v-card-subtitle> {{item.created_at}} </v-card-subtitle>
-                    </v-col>
-                </v-row>
+                <v-col cols=6>
+                    <v-card-title>Parsed at</v-card-title>
+                    <v-card-subtitle> {{item.created_at}} </v-card-subtitle>
+                </v-col>
+            </v-row>
 
-                <v-row>
-                    <v-col cols=12>
-                        <v-card-title>Filepath</v-card-title>
-                        <v-card-subtitle> {{item.path}} </v-card-subtitle>
-                    </v-col>
-                </v-row>
+            <v-row>
+                <v-col cols=12>
+                    <v-card-title>Filepath</v-card-title>
+                    <v-card-subtitle> {{item.path}} </v-card-subtitle>
+                </v-col>
+            </v-row>
 
-                <v-card-actions>
-                    <v-btn color="lighten-2" text @click="toggleFaces" v-if="item.faces.length !== 0">
-                        {{item.faces.length}} faces
-                    </v-btn>
+            <v-card-actions>
+                <v-btn color="lighten-2" text @click="toggleFaces" v-if="item.faces.length !== 0">
+                    {{item.faces.length}} faces
+                </v-btn>
 
-                    <v-btn color="lighten-2" text @click="togglePlates" v-if="item.plates.length !== 0">
-                        {{item.plates.length}} license plates
-                    </v-btn>
-                </v-card-actions>
+                <v-btn color="lighten-2" text @click="togglePlates" v-if="item.plates.length !== 0">
+                    {{item.plates.length}} license plates
+                </v-btn>
+            </v-card-actions>
 
-            </v-col>
-        </v-row>
-    </v-container>
+        </v-col>
+    </v-row>
     
     <v-divider></v-divider>
 

@@ -20,6 +20,7 @@ spec:
               - node2
               - node2.local
   restartPolicy: Always
+  terminationGracePeriodSeconds: 5
   containers:
   - name: {{ $backend }}
     image: diegofpsouza/monitor1-backend:0.0.1

@@ -13,20 +13,28 @@
         </v-card-title>
     </v-img>
 
-    <v-container>
-        <v-row>
-            <v-col cols="12">
+    <v-row>
+        <v-col cols=3>
+            <v-card-title>Node</v-card-title>
+            <v-card-subtitle> {{ item.hostname }} </v-card-subtitle>
+            <v-card-title>Parsed at</v-card-title>
+            <v-card-subtitle> {{ item.created_at }} </v-card-subtitle>
+        </v-col>
+
+        <v-col cols=9>
+            <v-container>
                 <v-data-table
                     :headers="item.table.headers"
                     :items="item.table.data"
                     :items-per-page="2"
+                    dark
                     hide-default-footer
                     class="elevation-1"
                 ></v-data-table>
-            </v-col>
-        </v-row>
+            </v-container>
+        </v-col>
+    </v-row>
 
-    </v-container>
 </v-card>
 </template>
 

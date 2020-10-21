@@ -119,3 +119,37 @@ class ParquetFaceDigester(ParquetDigester):
         cols["p5y"].append(p5[1])
         cols["b64image"].append(str(data["b64image"]))
 
+
+class ParquetLicensePlateDigester(ParquetDigester):
+
+    def __init__(self, filepath, max_buffer_size=1000):
+        super().__init__("FaceDigester", filepath, max_buffer_size)
+    
+    def headers(self):
+        return [
+            "uuid", 
+            "file_id", 
+            "r0", "r1", "r2", "r3", 
+            "b64image", 
+            "p1", "p2", "p3", 
+            "c1", "c2", "c3", 
+        ]
+    
+    def digest(self, cols, file_id, data):
+        uuid = data["uuid"] if "uuid" in data else ""
+        r = data["rect"]
+        
+        cols["uuid"].append(uuid)
+        cols["file_id"].append(file_id)
+        cols["r0"].append(r[0])
+        cols["r1"].append(r[1])
+        cols["r2"].append(r[2])
+        cols["r3"].append(r[3])
+        cols["b64image"].append(data["b64image"])
+        cols["p1"].append(data["p1"])
+        cols["p2"].append(data["p2"])
+        cols["p3"].append(data["p3"])
+        cols["c1"].append(data["c1"])
+        cols["c2"].append(data["c2"])
+        cols["c3"].append(data["c3"])
+

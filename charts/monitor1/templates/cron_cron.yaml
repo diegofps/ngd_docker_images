@@ -31,6 +31,10 @@ spec:
             - name: storage-cron
               mountPath: /target_cron
             env:
+              - name: HOSTHOSTNAME
+                valueFrom:
+                  fieldRef:
+                    fieldPath: spec.nodeName
               - name: TARGET
                 value: /target_cron
               - name: MONGOSERVER
