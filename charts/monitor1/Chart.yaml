@@ -1,5 +1,5 @@
 apiVersion: v2
-name: MonitorOne
+name: monitor1
 description: Folder monitor with image interpreter and indexing for Newport Devices
 
 # A chart can be either an 'application' or a 'library' chart.
