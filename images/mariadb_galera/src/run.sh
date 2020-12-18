@@ -1,12 +1,19 @@
 #!/bin/bash
 
-NAME=`hostname`
-FILE=/project/created.lock
+mkdir /run/mysqld/
+chown mysql:mysql /run/mysqld/
 
-if [ $NAME = "node1" -a -e $FILE  ]; then
-	mysqld
+if [ $TYPE = "master" ]; then
+	FILE=/project/created.lock
+
+	if [ -e $FILE  ]; then
+		mysqld
+	else
+		touch $FILE
+	        mysqld --wsrep-new-cluster
+	fi
+
 else
-	touch $FILE
-	mysqld --wsrep-new-cluster
+	mysqld
 fi
 
