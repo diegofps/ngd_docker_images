@@ -17,7 +17,7 @@ EXPOSE 4567
 EXPOSE 4568
 EXPOSE 4444
 
-COPY src .
 COPY data/galera.cnf /etc/mysql/mariadb.conf.d/60-galera.cnf
+COPY src .
 
-CMD [ "bash" ]
+CMD [ "bash", "/project/run.sh" ]

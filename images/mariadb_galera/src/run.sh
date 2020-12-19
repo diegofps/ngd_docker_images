@@ -1,9 +1,9 @@
 #!/bin/bash
 
-mkdir /run/mysqld/
+mkdir -p /run/mysqld/
 chown mysql:mysql /run/mysqld/
 
-if [ $TYPE = "master" ]; then
+if [ $TYPE = "principal" ]; then
 	FILE=/project/created.lock
 
 	if [ -e $FILE  ]; then
