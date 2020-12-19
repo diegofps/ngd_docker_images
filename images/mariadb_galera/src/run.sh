@@ -1,9 +1,11 @@
 #!/bin/bash
 
-mkdir -p /run/mysqld/
-chown mysql:mysql /run/mysqld/
+CONFIG_DST=/etc/mysql/mariadb.conf.d/60-galera.cnf
+CONFIG_SRC=/project/galera.cnf
 
-if [ $TYPE = "principal" ]; then
+cat $CONFIG_SRC | envsubst > $CONFIG_DST
+
+if [ $NODE_TYPE = "principal" ]; then
 	FILE=/project/created.lock
 
 	if [ -e $FILE  ]; then
