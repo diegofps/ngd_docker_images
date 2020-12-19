@@ -11,6 +11,9 @@ RUN apt update && apt install software-properties-common -yq
 RUN apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8
 RUN add-apt-repository 'deb [arch=amd64,arm64,ppc64el] http://sfo1.mirrors.digitalocean.com/mariadb/repo/10.5/ubuntu bionic main' & apt update
 RUN apt install -yq mariadb-server galera-4 mariadb-client libmariadb3 mariadb-backup mariadb-common
+RUN apt install -yq gettext-base rsync
+
+RUN mkdir -p /run/mysqld/ && chmod 777 /run/mysqld
 
 EXPOSE 3306
 EXPOSE 4567
@@ -18,6 +21,5 @@ EXPOSE 4568
 EXPOSE 4444
 
 COPY src .
-COPY data/galera.cnf /etc/mysql/mariadb.conf.d/60-galera.cnf
 
-CMD [ "bash" ]
+CMD [ "bash", "/project/run.sh" ]

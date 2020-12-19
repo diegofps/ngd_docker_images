@@ -8,7 +8,8 @@
 # Mandatory settings
 wsrep_on = ON
 wsrep_provider = /usr/lib/libgalera_smm.so
-wsrep_cluster_address = gcomm://192.168.1.138,192.168.1.108,192.168.1.118,192.168.1.125,192.168.1.146,10.1.1.2,10.1.2.2,10.1.3.2,10.1.4.2
+
+wsrep_cluster_address = gcomm://$NODES
 binlog_format = row
 default_storage_engine = InnoDB
 innodb_autoinc_lock_mode = 2
@@ -19,3 +20,9 @@ bind-address = 0.0.0.0
 # Optional settings
 #wsrep_slave_threads = 1
 #innodb_flush_log_at_trx_commit = 0
+
+# Galera Node Configuration
+wsrep_node_address = $NODE_IP
+wsrep_node_name = $NODE_NAME
+wsrep_sst_method = rsync
+
