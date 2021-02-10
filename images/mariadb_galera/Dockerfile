@@ -9,7 +9,7 @@ WORKDIR /project
 
 RUN apt update && apt install software-properties-common -yq
 RUN apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8
-RUN add-apt-repository 'deb [arch=amd64,arm64,ppc64el] http://sfo1.mirrors.digitalocean.com/mariadb/repo/10.5/ubuntu bionic main' & apt update
+RUN add-apt-repository 'deb [arch=amd64,arm64,ppc64el] http://sfo1.mirrors.digitalocean.com/mariadb/repo/10.5/ubuntu bionic main' && apt update
 RUN apt install -yq mariadb-server galera-4 mariadb-client libmariadb3 mariadb-backup mariadb-common
 RUN apt install -yq gettext-base rsync
 

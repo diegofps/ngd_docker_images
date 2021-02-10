@@ -2,3 +2,4 @@
 **/target
 images/monitor1_cron/src/*.csv
 images/monitor1_cron/src/*.parquet
+**/hadoop-*.tar.gz
