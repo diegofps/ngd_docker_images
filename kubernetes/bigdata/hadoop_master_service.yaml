@@ -1,7 +1,7 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: hadoop-master-svc
+  name: hadoop-master
 spec:
   ports:
     - name: p1

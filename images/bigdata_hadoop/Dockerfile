@@ -17,9 +17,9 @@ COPY --from=intermediate /hadoop /hadoop
 ENV PATH="$PATH:/hadoop/bin"
 ENV HADOOP_HOME="/hadoop"
 
+RUN apt install vim -yq
+
 WORKDIR /app
 COPY src .
-
-RUN apt install vim -yq
 
 CMD ["/app/start.sh"]
