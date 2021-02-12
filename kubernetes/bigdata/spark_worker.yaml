@@ -1,17 +1,17 @@
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: hadoop-worker
+  name: spark-worker
   labels:
-    app: hadoop-worker
+    app: spark-worker
 spec:
   selector:
     matchLabels:
-      name: hadoop-worker
+      name: spark-worker
   template:
     metadata:
       labels:
-        name: hadoop-worker
+        name: spark-worker
     spec:
       restartPolicy: Always
       affinity:
@@ -24,11 +24,9 @@ spec:
                   values:
                   - arm64
       containers:
-        - name: hadoop-worker
-          image: diegofpsouza/bigdata_hadoop:0.0.1
+        - name: spark-worker
+          image: diegofpsouza/bigdata_spark:0.0.1
           imagePullPolicy: Always
           env:
-            - name: HADOOP_MODE
-              value: data
-          ports:
-            - containerPort: 9864
+            - name: SPARK_MODE
+              value: worker
