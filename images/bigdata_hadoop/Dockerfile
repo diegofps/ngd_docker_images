@@ -6,7 +6,7 @@ RUN /hadoop_src/install_hadoop.sh
 
 
 
-FROM openjdk:8
+FROM openjdk:11
 
 ENV DEBIAN_FRONTEND="noninteractive"
 

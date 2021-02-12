@@ -1,0 +1,33 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: hadoop-master-svc
+spec:
+  ports:
+    - name: p1
+      port: 9000
+      targetPort: 9000
+    - name: p2
+      port: 8032
+      targetPort: 8032
+    - name: p3
+      port: 8088
+      targetPort: 8088
+    - name: p4
+      port: 9864
+      targetPort: 9864
+    - name: p5
+      port: 9870
+      targetPort: 9870
+    - name: p6
+      port: 19888
+      targetPort: 19888
+    - name: p7
+      port: 8042
+      targetPort: 8042
+    - name: p8
+      port: 9046
+      targetPort: 9046
+  selector:
+    app: hadoop-master
+  type: LoadBalancer
