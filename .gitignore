@@ -3,3 +3,4 @@
 images/monitor1_cron/src/*.csv
 images/monitor1_cron/src/*.parquet
 **/data/hadoop-*.tar.gz*
+**/data/spark-*.tgz*
