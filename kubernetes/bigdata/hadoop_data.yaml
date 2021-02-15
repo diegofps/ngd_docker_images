@@ -1,17 +1,17 @@
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: hadoop-worker
+  name: hadoop-data
   labels:
-    app: hadoop-worker
+    app: hadoop-data
 spec:
   selector:
     matchLabels:
-      name: hadoop-worker
+      name: hadoop-data
   template:
     metadata:
       labels:
-        name: hadoop-worker
+        name: hadoop-data
     spec:
       restartPolicy: Always
       affinity:
@@ -24,11 +24,20 @@ spec:
                   values:
                   - arm64
       containers:
-        - name: hadoop-worker
+        - name: hadoop-data
           image: diegofpsouza/bigdata_hadoop:0.0.1
           imagePullPolicy: Always
+          volumeMounts:
+            - mountPath: /hadoop_data
+              name: hadoop-data
           env:
             - name: HADOOP_MODE
               value: data
           ports:
             - containerPort: 9864
+      volumes:
+        - name: hadoop-data
+          hostPath:
+            path: /media/storage
+            type: Directory
+
