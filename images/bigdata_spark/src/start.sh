@@ -10,9 +10,11 @@ if [ "$SPARK_MODE" = "master" ]; then
     tail -f /spark/logs/spark-*-org.apache.spark.deploy.master.Master-1-*.out
 
 
-elif [ "#SPARK_MODE" = "worker" ]; then
+elif [ "$SPARK_MODE" = "worker" ]; then
     echo "Starting in worker mode"
 
+    cp /spark/conf/spark-env.sh.template /spark/conf/spark-env.sh
+    echo "export SPARK_WORKER_CORES=$(nproc)" >> /spark/conf/spark-env.sh
     /spark/sbin/start-slave.sh spark://spark-master:7077
 
     sleep 3

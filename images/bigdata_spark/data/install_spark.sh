@@ -13,6 +13,6 @@ mv spark-3.0.1-bin-hadoop3.2 /spark
 # Configure Build
 ################################################################################
 
-# Nothing to do
 #echo "Configuring spark..."
+# Nothing to do to at this moment
 #exit 0

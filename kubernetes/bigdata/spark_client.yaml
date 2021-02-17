@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: spark-client
+  labels:
+    app: spark-client
+spec:
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: kubernetes.io/arch
+            operator: In
+            values:
+            - amd64
+  restartPolicy: Always
+  containers:
+  - name: spark-client
+    image: diegofpsouza/bigdata_spark:0.0.1
+    imagePullPolicy: Always
+    volumeMounts:
+      - mountPath: /ipsms
+        name: shared
+    env:
+      - name: SPARK_MODE
+        value: client
+    ports:
+      - containerPort: 8080
+      - containerPort: 7077
+  volumes:
+    - name: shared
+      hostPath:
+        path: /home/ngd/Sources/ipsms
+        type: Directory
+

@@ -30,7 +30,7 @@ if [ "$HADOOP_MODE" = "master" ]; then
     sleep 3
     tail -f /hadoop/logs/hadoop-root-namenode-*.log
 
-else if [ "$HADOOP_MODE" = "client" ]; then
+elif [ "$HADOOP_MODE" = "client" ]; then
 
     echo "Starting as client node"
     bash
