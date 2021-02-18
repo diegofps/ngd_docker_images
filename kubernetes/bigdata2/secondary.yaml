@@ -33,6 +33,10 @@ spec:
           env:
             - name: MODE
               value: secondary
+          ports:
+            - containerPort: 9864
+            - containerPort: 9866
+            - containerPort: 9867
       volumes:
         - name: hadoop-data
           hostPath:
