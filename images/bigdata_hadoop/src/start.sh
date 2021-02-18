@@ -33,7 +33,7 @@ if [ "$HADOOP_MODE" = "master" ]; then
 elif [ "$HADOOP_MODE" = "client" ]; then
 
     echo "Starting as client node"
-    bash
+    sleep infinity
 
 else
     echo "Starting as data node"
