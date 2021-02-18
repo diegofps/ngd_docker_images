@@ -27,6 +27,14 @@ spec:
         - name: bigdata2-secondary
           image: diegofpsouza/bigdata2:0.0.1
           imagePullPolicy: Always
+          volumeMounts:
+            - mountPath: /hadoop_data
+              name: hadoop-data
           env:
             - name: MODE
               value: secondary
+      volumes:
+        - name: hadoop-data
+          hostPath:
+            path: /media/storage
+            type: Directory

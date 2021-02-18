@@ -25,4 +25,12 @@ spec:
     ports:
       - containerPort: 8080
       - containerPort: 7077
+      - containerPort: 9000
+      - containerPort: 8032
+      - containerPort: 8088
+      - containerPort: 9864
+      - containerPort: 9870
+      - containerPort: 19888
+      - containerPort: 8042
+      - containerPort: 9046
 
