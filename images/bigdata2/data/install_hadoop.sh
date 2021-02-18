@@ -1,5 +1,7 @@
 #!/bin/sh
 
+MASTER=$1
+
 ################################################################################
 # Extract hadoop
 ################################################################################
@@ -33,7 +35,7 @@ chmod -R 750 /hadoop_data
 ###
 
 # Configure fs.defaultFS
-cat /hadoop/etc/hadoop/core-site.xml | sed 's/<configuration>$/<configuration>\n  <property>\n    <name>fs.defaultFS<\/name>\n    <value>hdfs:\/\/hadoop-master:9000<\/value>\n  <\/property>/' > ./tmp && mv ./tmp /hadoop/etc/hadoop/core-site.xml
+cat /hadoop/etc/hadoop/core-site.xml | sed "s/<configuration>\$/<configuration>\n  <property>\n    <name>fs.defaultFS<\/name>\n    <value>hdfs:\/\/${MASTER}:9000<\/value>\n  <\/property>/" > ./tmp && mv ./tmp /hadoop/etc/hadoop/core-site.xml
 
 # Configure hadoop.tmp.dir
 cat /hadoop/etc/hadoop/core-site.xml | sed 's/<\/configuration>$/\n  <property>\n    <name>hadoop.tmp.dir<\/name>\n    <value>file:\/\/\/hadoop_data\/tmp<\/value>\n  <\/property>\n<\/configuration>/' > ./tmp && mv ./tmp /hadoop/etc/hadoop/core-site.xml

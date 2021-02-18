@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: bigdata2-secondary
+  labels:
+    app: bigdata2-secondary
+spec:
+  selector:
+    matchLabels:
+      name: bigdata2-secondary
+  template:
+    metadata:
+      labels:
+        name: bigdata2-secondary
+    spec:
+      restartPolicy: Always
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: kubernetes.io/arch
+                  operator: In
+                  values:
+                  - arm64
+      containers:
+        - name: bigdata2-secondary
+          image: diegofpsouza/bigdata2:0.0.1
+          imagePullPolicy: Always
+          env:
+            - name: MODE
+              value: secondary

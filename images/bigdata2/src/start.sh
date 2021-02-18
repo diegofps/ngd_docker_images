@@ -52,7 +52,7 @@ elif [ "$MODE" = "secondary" ]; then
     # Init spark
     cp /spark/conf/spark-env.sh.template /spark/conf/spark-env.sh
     echo "export SPARK_WORKER_CORES=$(nproc)" >> /spark/conf/spark-env.sh
-    /spark/sbin/start-slave.sh spark://spark-master:7077
+    /spark/sbin/start-slave.sh spark://bigdata2-primary:7077
 
 
     # Monitor Hadoop log

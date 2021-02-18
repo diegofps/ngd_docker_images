@@ -2,7 +2,7 @@ FROM ubuntu:20.04 as intermediate
 ENV DEBIAN_FRONTEND="noninteractive"
 WORKDIR /hadoop_src
 COPY data .
-RUN /hadoop_src/install_hadoop.sh
+RUN /hadoop_src/install_hadoop.sh hadoop-master
 
 
 

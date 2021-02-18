@@ -1,0 +1,15 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: bigdata2-primary
+spec:
+  ports:
+    - name: p1
+      port: 7077
+      targetPort: 7077
+    - name: p2
+      port: 8080
+      targetPort: 8080
+  selector:
+    app: bigdata2-primary
+  type: LoadBalancer

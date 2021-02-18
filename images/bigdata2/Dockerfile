@@ -2,7 +2,7 @@ FROM ubuntu:20.04 as intermediate
 ENV DEBIAN_FRONTEND="noninteractive"
 WORKDIR /src
 COPY data .
-RUN /src/install_hadoop.sh
+RUN /src/install_hadoop.sh bigdata2-primary
 RUN /src/install_spark.sh
 
 
