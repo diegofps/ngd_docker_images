@@ -4,12 +4,36 @@ metadata:
   name: bigdata2-primary
 spec:
   ports:
-    - name: p1
+    - name: p10
       port: 7077
       targetPort: 7077
-    - name: p2
+    - name: p9
       port: 8080
       targetPort: 8080
+    - name: p1
+      port: 9000
+      targetPort: 9000
+    - name: p2
+      port: 8032
+      targetPort: 8032
+    - name: p3
+      port: 8088
+      targetPort: 8088
+    - name: p4
+      port: 9864
+      targetPort: 9864
+    - name: p5
+      port: 9870
+      targetPort: 9870
+    - name: p6
+      port: 19888
+      targetPort: 19888
+    - name: p7
+      port: 8042
+      targetPort: 8042
+    - name: p8
+      port: 9046
+      targetPort: 9046
   selector:
     app: bigdata2-primary
   type: LoadBalancer
