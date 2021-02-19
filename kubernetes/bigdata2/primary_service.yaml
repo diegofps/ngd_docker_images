@@ -4,36 +4,162 @@ metadata:
   name: bigdata2-primary
 spec:
   ports:
-    - name: p10
+    - name: p0
+      port: 0
+      targetPort: 0
+    - name: p1
+      port: 2181
+      targetPort: 2181
+    - name: p2
       port: 7077
       targetPort: 7077
-    - name: p9
-      port: 8080
-      targetPort: 8080
-    - name: p1
-      port: 9000
-      targetPort: 9000
-    - name: p2
+    - name: p3
+      port: 8030
+      targetPort: 8030
+    - name: p4
+      port: 8031
+      targetPort: 8031
+    - name: p5
       port: 8032
       targetPort: 8032
-    - name: p3
-      port: 8088
-      targetPort: 8088
-    - name: p4
-      port: 9864
-      targetPort: 9864
-    - name: p5
-      port: 9870
-      targetPort: 9870
     - name: p6
-      port: 19888
-      targetPort: 19888
+      port: 8033
+      targetPort: 8033
     - name: p7
+      port: 8040
+      targetPort: 8040
+    - name: p8
       port: 8042
       targetPort: 8042
-    - name: p8
+    - name: p9
+      port: 8044
+      targetPort: 8044
+    - name: p10
+      port: 8045
+      targetPort: 8045
+    - name: p11
+      port: 8046
+      targetPort: 8046
+    - name: p12
+      port: 8047
+      targetPort: 8047
+    - name: p13
+      port: 8048
+      targetPort: 8048
+    - name: p14
+      port: 8049
+      targetPort: 8049
+    - name: p15
+      port: 8080
+      targetPort: 8080
+    - name: p16
+      port: 8088
+      targetPort: 8088
+    - name: p17
+      port: 8089
+      targetPort: 8089
+    - name: p18
+      port: 8090
+      targetPort: 8090
+    - name: p19
+      port: 8091
+      targetPort: 8091
+    - name: p20
+      port: 8111
+      targetPort: 8111
+    - name: p21
+      port: 8188
+      targetPort: 8188
+    - name: p22
+      port: 8190
+      targetPort: 8190
+    - name: p23
+      port: 8480
+      targetPort: 8480
+    - name: p24
+      port: 8481
+      targetPort: 8481
+    - name: p25
+      port: 8485
+      targetPort: 8485
+    - name: p26
+      port: 8788
+      targetPort: 8788
+    - name: p27
+      port: 8888
+      targetPort: 8888
+    - name: p28
+      port: 9000
+      targetPort: 9000
+    - name: p29
       port: 9046
       targetPort: 9046
+    - name: p30
+      port: 9864
+      targetPort: 9864
+    - name: p31
+      port: 9865
+      targetPort: 9865
+    - name: p32
+      port: 9866
+      targetPort: 9866
+    - name: p33
+      port: 9867
+      targetPort: 9867
+    - name: p34
+      port: 9868
+      targetPort: 9868
+    - name: p35
+      port: 9869
+      targetPort: 9869
+    - name: p36
+      port: 9870
+      targetPort: 9870
+    - name: p37
+      port: 9871
+      targetPort: 9871
+    - name: p38
+      port: 10020
+      targetPort: 10020
+    - name: p39
+      port: 10033
+      targetPort: 10033
+    - name: p40
+      port: 10200
+      targetPort: 10200
+    - name: p41
+      port: 19888
+      targetPort: 19888
+    - name: p42
+      port: 19890
+      targetPort: 19890
+    - name: p43
+      port: 50030
+      targetPort: 50030
+    - name: p44
+      port: 50060
+      targetPort: 50060
+    - name: p45
+      port: 50070
+      targetPort: 50070
+    - name: p46
+      port: 50071
+      targetPort: 50071
+    - name: p47
+      port: 50072
+      targetPort: 50072
+    - name: p48
+      port: 50075
+      targetPort: 50075
+    - name: p49
+      port: 50100
+      targetPort: 50100
+    - name: p50
+      port: 50105
+      targetPort: 50105
+    - name: p51
+      port: 50200
+      targetPort: 50200
   selector:
     app: bigdata2-primary
   type: LoadBalancer
