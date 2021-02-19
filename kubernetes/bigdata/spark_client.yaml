@@ -19,6 +19,9 @@ spec:
   - name: spark-client
     image: diegofpsouza/bigdata_spark:0.0.1
     imagePullPolicy: Always
+    command:
+      - sleep
+      - infinity
     volumeMounts:
       - mountPath: /ipsms
         name: shared
