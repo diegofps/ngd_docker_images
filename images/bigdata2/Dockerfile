@@ -15,7 +15,7 @@ COPY --from=intermediate /spark /spark
 COPY --from=intermediate /hadoop /hadoop
 
 RUN apt update
-RUN apt install ssh pdsh vim -yq
+RUN apt install ssh pdsh vim lsof -yq
 
 ENV PATH="$PATH:/spark/bin:/hadoop/bin"
 ENV HADOOP_HOME="/hadoop"
@@ -24,7 +24,6 @@ ENV SPARK_HOME="/spark"
 WORKDIR /app
 COPY src .
 
-EXPOSE 0
 EXPOSE 2181
 EXPOSE 7077
 EXPOSE 8030

@@ -4,9 +4,6 @@ metadata:
   name: bigdata2-primary
 spec:
   ports:
-    - name: p0
-      port: 0
-      targetPort: 0
     - name: p1
       port: 2181
       targetPort: 2181
@@ -133,6 +130,9 @@ spec:
     - name: p42
       port: 19890
       targetPort: 19890
+    - name: p52
+      port: 37573
+      targetPort: 37573
     - name: p43
       port: 50030
       targetPort: 50030
@@ -160,6 +160,7 @@ spec:
     - name: p51
       port: 50200
       targetPort: 50200
+      
   selector:
     app: bigdata2-primary
   type: LoadBalancer

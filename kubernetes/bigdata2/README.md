@@ -24,6 +24,18 @@ hdfs dfs -setrep -w 3 /train.snappy.parquet
 hdfs dfs -setrep -w 3 /sample_submission.csv
 ```
 
+# View Logs
+
+```
+# Open the primary container or a datanode (secondary)
+sudo kubectl exec -it bigdata2-primary -- bash
+
+# Open tha log
+tail -f /hadoop/logs/hadoop-root-namenode-bigdata2-primary.log
+tail -f /hadoop/logs/hadoop-root-namenode-bigdata2-primary.log
+```
+
+
 # Undeploy
 
 ```

@@ -26,7 +26,6 @@ spec:
       - name: MODE
         value: client
     ports:
-      - containerPort: 0
       - containerPort: 2181
       - containerPort: 7077
       - containerPort: 8030
