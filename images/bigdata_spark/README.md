@@ -26,7 +26,6 @@ docker update --restart=always buildx_buildkit_mybuilder0
 docker buildx build --platform linux/amd64,linux/arm64 --push=true -t diegofpsouza/bigdata_hadoop:0.0.1 .
 ```
 
-
 # Build and run locally
 
 ## Build the image

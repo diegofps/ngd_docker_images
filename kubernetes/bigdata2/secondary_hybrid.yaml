@@ -23,10 +23,11 @@ spec:
                   operator: In
                   values:
                   - arm64
+                  - amd64
       containers:
         - name: bigdata2-secondary
           image: diegofpsouza/bigdata2:0.0.1
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           volumeMounts:
             - mountPath: /hadoop_data
               name: hadoop-data

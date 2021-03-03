@@ -36,11 +36,6 @@ if [ "$MODE" = "primary" ]; then
     /spark/sbin/start-master.sh -h 0.0.0.0
 
 
-    # Monitor Hadoop log
-    echo "Started"
-    sleep infinity
-
-
 elif [ "$MODE" = "secondary" ]; then
     echo "Starting as secondary node"
 
@@ -54,14 +49,34 @@ elif [ "$MODE" = "secondary" ]; then
     echo "export SPARK_WORKER_CORES=$(nproc)" >> /spark/conf/spark-env.sh
     /spark/sbin/start-slave.sh spark://bigdata2-primary:7077
 
-
-    # Monitor Hadoop log
-    echo "Started"
-    sleep infinity
-
 else
-
     echo "Starting as client node"
     sleep infinity
 
 fi
+
+
+echo "Started"
+
+if [ "$LOG_MODE" = "hadoop_primary"]; then
+    tail -f /hadoop/logs/hadoop-root-namenode-*.log
+
+
+elif [ "$LOG_MODE" = "hadoop_secondary"]; then
+    tail -f /hadoop/logs/hadoop-root-datanode-*.log
+
+
+elif [ "$LOG_MODE" = "spark_primary"]; then
+    tail -f /spark/logs/spark-ngd-org.apache.spark.deploy.master.*.out
+
+
+elif [ "$LOG_MODE" = "spark_secondary"]; then
+    tail -f /spark/logs/spark-ngd-org.apache.spark.deploy.worker.*.out
+
+
+else
+    sleep infinity
+
+fi
+
+# Monitor Hadoop log

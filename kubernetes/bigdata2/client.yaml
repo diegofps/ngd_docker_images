@@ -18,7 +18,7 @@ spec:
   containers:
   - name: bigdata2-client
     image: diegofpsouza/bigdata2:0.0.1
-    imagePullPolicy: Always
+    imagePullPolicy: IfNotPresent
     volumeMounts:
       - mountPath: /ipsms
         name: shared
@@ -27,6 +27,7 @@ spec:
         value: client
     ports:
       - containerPort: 2181
+      - containerPort: 4040
       - containerPort: 7077
       - containerPort: 8030
       - containerPort: 8031

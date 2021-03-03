@@ -47,7 +47,7 @@ cat /hadoop/etc/hadoop/core-site.xml | sed 's/<\/configuration>$/\n  <property>\
 cat /hadoop/etc/hadoop/hdfs-site.xml | sed 's/<\/configuration>/  <property>\n    <name>dfs.namenode.datanode.registration.ip-hostname-check<\/name>\n    <value>false<\/value>\n  <\/property>\n<\/configuration>/' > ./tmp && mv ./tmp /hadoop/etc/hadoop/hdfs-site.xml
 
 # Configure dfs.replication
-cat /hadoop/etc/hadoop/hdfs-site.xml | sed 's/<\/configuration>/  <property>\n    <name>dfs.replication<\/name>\n    <value>5<\/value>\n  <\/property>\n<\/configuration>/' > ./tmp && mv ./tmp /hadoop/etc/hadoop/hdfs-site.xml
+cat /hadoop/etc/hadoop/hdfs-site.xml | sed 's/<\/configuration>/  <property>\n    <name>dfs.replication<\/name>\n    <value>3<\/value>\n  <\/property>\n<\/configuration>/' > ./tmp && mv ./tmp /hadoop/etc/hadoop/hdfs-site.xml
 
 # Configure dfs.name.dir
 cat /hadoop/etc/hadoop/hdfs-site.xml | sed 's/<\/configuration>/\n  <property>\n    <name>dfs.name.dir<\/name>\n    <value>file:\/\/\/hadoop_data\/dfs_namenode<\/value>\n  <\/property>\n<\/configuration>/' > ./tmp && mv ./tmp /hadoop/etc/hadoop/hdfs-site.xml
@@ -66,6 +66,9 @@ cat /hadoop/etc/hadoop/hdfs-site.xml | sed 's/<\/configuration>/\n  <property>\n
 
 cat /hadoop/etc/hadoop/hdfs-site.xml | sed 's/<\/configuration>/\n  <property>\n    <name>dfs.namenode.https-bind-host<\/name>\n    <value>0.0.0.0<\/value>\n  <\/property>\n<\/configuration>/' > ./tmp && mv ./tmp /hadoop/etc/hadoop/hdfs-site.xml
 
+cat /hadoop/etc/hadoop/hdfs-site.xml | sed 's/<\/configuration>/\n  <property>\n    <name>dfs.client.use.datanode.hostname<\/name>\n    <value>false<\/value>\n  <\/property>\n<\/configuration>/' > ./tmp && mv ./tmp /hadoop/etc/hadoop/hdfs-site.xml
+
+cat /hadoop/etc/hadoop/hdfs-site.xml | sed 's/<\/configuration>/\n  <property>\n    <name>dfs.datanode.use.datanode.hostname<\/name>\n    <value>false<\/value>\n  <\/property>\n<\/configuration>/' > ./tmp && mv ./tmp /hadoop/etc/hadoop/hdfs-site.xml
 
 ###
 

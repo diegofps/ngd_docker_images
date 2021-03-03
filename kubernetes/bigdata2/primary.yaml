@@ -18,7 +18,7 @@ spec:
   containers:
   - name: bigdata2-primary
     image: diegofpsouza/bigdata2:0.0.1
-    imagePullPolicy: Always
+    imagePullPolicy: IfNotPresent
     env:
       - name: MODE
         value: primary
