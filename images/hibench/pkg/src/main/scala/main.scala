@@ -278,13 +278,13 @@ def add_logistic_regression(valRepetitions: Range, jobs: ListBuffer[Job]): Unit 
 }
 
 def add_kmeans(valRepetitions: Range, jobs: ListBuffer[Job]): Unit = {
+
     val numIterations = Range(10, 60, 10) // 5
     val numClusters = Range(1, 11) // 10
 
     for (clusters <- numClusters) {
         for (iterations <- numIterations) {
             for (repetition <- valRepetitions) {
-
                 jobs.append(Job(idd, TYPE_KMEANS, Map(
                     "clusters" -> clusters.toString,
                     "iterations" -> iterations.toString
@@ -295,6 +295,7 @@ def add_kmeans(valRepetitions: Range, jobs: ListBuffer[Job]): Unit = {
 }
 
 def add_gradient_boosted_trees(valRepetitions: Range, jobs: ListBuffer[Job]): Unit = {
+
     val numIterations = Range(3, 30, 3) // 9
     val valDepths = Range(1, 7) // 6
 
@@ -304,7 +305,6 @@ def add_gradient_boosted_trees(valRepetitions: Range, jobs: ListBuffer[Job]): Un
     for (depth <- valDepths) {
         for (iterations <- numIterations) {
             for (repetition <- valRepetitions) {
-
                 jobs.append(Job(idd, TYPE_GRADIENT_BOOSTED_TREES, Map(
                     "depth" -> depth.toString,
                     "iterations" -> iterations.toString,
@@ -332,7 +332,6 @@ def add_random_forest(valRepetitions: Range, jobs: ListBuffer[Job]): Unit = {
             for (trees <- valTrees) {
                 for (depth <- valDepths) {
                     for (repetition <- valRepetitions) {
-
                         jobs.append(Job(idd, TYPE_RANDOM_FOREST, Map(
                             "impurity" -> impurity,
                             "bins" -> bins.toString,
@@ -362,7 +361,6 @@ def add_decision_tree(valRepetitions: Range, jobs: ListBuffer[Job]): Unit = {
         for (bins <- valBins) {
             for (depth <- valDepths) {
                 for (repetition <- valRepetitions) {
-
                     jobs.append(Job(TYPE_DECISION_TREE, Map(
                         "impurity" -> impurity,
                         "bins" -> bins.toString,
@@ -388,7 +386,6 @@ def add_svm(valRepetitions: Range, jobs: ListBuffer[Job]): Unit = {
             for (regParam <- valRegParam) {
                 for (miniBatchFraction <- valMiniBatchFraction) {
                     for (repetition <- valRepetitions) {
-
                         jobs.append(Job(TYPE_SVM, Map(
                             "stepSize" -> stepSize.toString,
                             "iterations" -> iterations.toString,
