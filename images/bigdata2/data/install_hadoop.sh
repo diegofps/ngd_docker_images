@@ -32,7 +32,8 @@ mkdir -p /hadoop_data/dfs_datanode
 mkdir -p /hadoop_data/tmp
 chmod -R 750 /hadoop_data
 
-###
+
+### CORE
 
 # Configure fs.defaultFS
 cat /hadoop/etc/hadoop/core-site.xml | sed "s/<configuration>\$/<configuration>\n  <property>\n    <name>fs.defaultFS<\/name>\n    <value>hdfs:\/\/${MASTER}:9000<\/value>\n  <\/property>/" > ./tmp && mv ./tmp /hadoop/etc/hadoop/core-site.xml
@@ -40,8 +41,8 @@ cat /hadoop/etc/hadoop/core-site.xml | sed "s/<configuration>\$/<configuration>\
 # Configure hadoop.tmp.dir
 cat /hadoop/etc/hadoop/core-site.xml | sed 's/<\/configuration>$/\n  <property>\n    <name>hadoop.tmp.dir<\/name>\n    <value>file:\/\/\/hadoop_data\/tmp<\/value>\n  <\/property>\n<\/configuration>/' > ./tmp && mv ./tmp /hadoop/etc/hadoop/core-site.xml
 
-###
 
+### HDFS
 
 # Allow datanodes not listed in etc/conf/slaves
 cat /hadoop/etc/hadoop/hdfs-site.xml | sed 's/<\/configuration>/  <property>\n    <name>dfs.namenode.datanode.registration.ip-hostname-check<\/name>\n    <value>false<\/value>\n  <\/property>\n<\/configuration>/' > ./tmp && mv ./tmp /hadoop/etc/hadoop/hdfs-site.xml
@@ -70,15 +71,26 @@ cat /hadoop/etc/hadoop/hdfs-site.xml | sed 's/<\/configuration>/\n  <property>\n
 
 cat /hadoop/etc/hadoop/hdfs-site.xml | sed 's/<\/configuration>/\n  <property>\n    <name>dfs.datanode.use.datanode.hostname<\/name>\n    <value>false<\/value>\n  <\/property>\n<\/configuration>/' > ./tmp && mv ./tmp /hadoop/etc/hadoop/hdfs-site.xml
 
-###
 
-# Configure yarn.nodemanager.aux-services
+### Mapreduce
+
 cat /hadoop/etc/hadoop/mapred-site.xml | sed 's/<\/configuration>/  <property>\n    <name>mapreduce.framework.name<\/name>\n    <value>yarn<\/value>\n  <\/property>\n<\/configuration>/' > ./tmp && mv ./tmp /hadoop/etc/hadoop/mapred-site.xml
 
-###
+cat /hadoop/etc/hadoop/mapred-site.xml | sed 's|</configuration>|\n  <property>\n    <name>yarn.app.mapreduce.am.env</name>\n    <value>/hadoop</value>\n  </property>\n</configuration>|' > ./tmp && mv ./tmp /hadoop/etc/hadoop/mapred-site.xml
+
+cat /hadoop/etc/hadoop/mapred-site.xml | sed 's|</configuration>|\n  <property>\n    <name>mapreduce.map.env</name>\n    <value>/hadoop</value>\n  </property>\n</configuration>|' > ./tmp && mv ./tmp /hadoop/etc/hadoop/mapred-site.xml
+
+cat /hadoop/etc/hadoop/mapred-site.xml | sed 's|</configuration>|\n  <property>\n    <name>mapreduce.reduce.env</name>\n    <value>/hadoop</value>\n  </property>\n</configuration>|' > ./tmp && mv ./tmp /hadoop/etc/hadoop/mapred-site.xml
+
+cat /hadoop/etc/hadoop/mapred-site.xml | sed 's|</configuration>|\n  <property>\n    <name>mapreduce.application.classpath</name>\n    <value>/hadoop/share/hadoop/mapreduce/*,/hadoop/share/hadoop/mapreduce/lib/*,/hadoop/share/hadoop/common/*,/hadoop/share/hadoop/common/lib/*,/hadoop/share/hadoop/yarn/*,/hadoop/share/hadoop/yarn/lib/*,/hadoop/share/hadoop/hdfs/*,/hadoop/share/hadoop/hdfs/lib/*</value>\n  </property>\n</configuration>|' > ./tmp && mv ./tmp /hadoop/etc/hadoop/mapred-site.xml
+
+
+### Yarn
 
 # Configure yarn.nodemanager.aux-services
 cat /hadoop/etc/hadoop/yarn-site.xml | sed 's/<\/configuration>/  <property>\n    <name>yarn.nodemanager.aux-services<\/name>\n    <value>mapreduce_shuffle<\/value>\n  <\/property>\n<\/configuration>/' > ./tmp && mv ./tmp /hadoop/etc/hadoop/yarn-site.xml
 
 # Configure yarn.web-proxy.address
 cat /hadoop/etc/hadoop/yarn-site.xml | sed 's/<\/configuration>/\n  <property>\n    <name>yarn.web-proxy.address<\/name>\n    <value>0.0.0.0:9046<\/value>\n  <\/property>\n<\/configuration>/' > ./tmp && mv ./tmp /hadoop/etc/hadoop/yarn-site.xml
+
+

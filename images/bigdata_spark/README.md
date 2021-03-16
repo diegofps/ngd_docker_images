@@ -1,5 +1,3 @@
-
-
 # Build and deploy to docker hub
 
 ## Configure docker buildx (First time only)

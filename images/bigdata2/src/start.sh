@@ -49,33 +49,39 @@ elif [ "$MODE" = "secondary" ]; then
     echo "export SPARK_WORKER_CORES=$(nproc)" >> /spark/conf/spark-env.sh
     /spark/sbin/start-slave.sh spark://bigdata2-primary:7077
 
-else
-    echo "Starting as client node"
-    sleep infinity
+elif [ "$MODE" = "client" ]; then
+    echo "Starting as client"
+    bash
+    exit 0
 
 fi
 
 
 echo "Started"
 
-if [ "$LOG_MODE" = "hadoop_primary"]; then
+if [ "$LOG_MODE" = "hadoop_primary" ]; then
+    echo "Following hadoop namenode log"
     tail -f /hadoop/logs/hadoop-root-namenode-*.log
 
 
-elif [ "$LOG_MODE" = "hadoop_secondary"]; then
+elif [ "$LOG_MODE" = "hadoop_secondary" ]; then
+    echo "Following hadoop datanode log"
     tail -f /hadoop/logs/hadoop-root-datanode-*.log
 
 
-elif [ "$LOG_MODE" = "spark_primary"]; then
+elif [ "$LOG_MODE" = "spark_primary" ]; then
+    echo "Following spark master log"
     tail -f /spark/logs/spark-ngd-org.apache.spark.deploy.master.*.out
 
 
-elif [ "$LOG_MODE" = "spark_secondary"]; then
+elif [ "$LOG_MODE" = "spark_secondary" ]; then
+    echo "Following hadoop worker log"
     tail -f /spark/logs/spark-ngd-org.apache.spark.deploy.worker.*.out
 
 
 else
-    sleep infinity
+    echo "Following default, /var/log/faillog"
+    echo "Starting tail for /var/log/faillog"
 
 fi
 
