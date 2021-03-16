@@ -17,14 +17,14 @@ spec:
   restartPolicy: Always
   containers:
   - name: bigdata2-client
-    image: diegofpsouza/bigdata2:0.0.1
-    imagePullPolicy: IfNotPresent
+    image: diegofpsouza/hibench:0.0.1
+    imagePullPolicy: Always
     volumeMounts:
       - mountPath: /ipsms
         name: shared
     env:
       - name: MODE
-        value: client
+        value: sleep
     ports:
       - containerPort: 2181
       - containerPort: 4040

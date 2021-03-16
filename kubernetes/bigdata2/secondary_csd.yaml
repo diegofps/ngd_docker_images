@@ -1,17 +1,17 @@
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: bigdata2-secondary
+  name: bigdata2-secondary-csd
   labels:
-    app: bigdata2-secondary
+    app: bigdata2-secondary-csd
 spec:
   selector:
     matchLabels:
-      name: bigdata2-secondary
+      name: bigdata2-secondary-csd
   template:
     metadata:
       labels:
-        name: bigdata2-secondary
+        name: bigdata2-secondary-csd
     spec:
       restartPolicy: Always
       affinity:
@@ -24,9 +24,9 @@ spec:
                   values:
                   - arm64
       containers:
-        - name: bigdata2-secondary
-          image: diegofpsouza/bigdata2:0.0.1
-          imagePullPolicy: IfNotPresent
+        - name: bigdata2-secondary-csd
+          image: diegofpsouza/hibench:0.0.1
+          imagePullPolicy: Always
           volumeMounts:
             - mountPath: /hadoop_data
               name: hadoop-data

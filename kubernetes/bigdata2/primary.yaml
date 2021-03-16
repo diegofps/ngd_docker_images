@@ -17,7 +17,7 @@ spec:
   restartPolicy: Always
   containers:
   - name: bigdata2-primary
-    image: diegofpsouza/bigdata2:0.0.1
+    image: diegofpsouza/hibench:0.0.1
     imagePullPolicy: IfNotPresent
     env:
       - name: MODE
