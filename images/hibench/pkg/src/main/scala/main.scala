@@ -1,11 +1,11 @@
 package br.com.wespa.ngd.spark.parametertunning
 
-
-import org.apache.spark.rdd.RDD
-import scala.collection.mutable.ListBuffer
-import org.apache.spark.mllib.regression.LabeledPoint
-import org.apache.spark.mllib.util.MLUtils
 import org.apache.spark.mllib.evaluation.BinaryClassificationMetrics
+import org.apache.spark.mllib.regression.LabeledPoint
+import scala.collection.mutable.ListBuffer
+import org.apache.spark.mllib.util.MLUtils
+import org.apache.spark.sql.SparkSession
+import org.apache.spark.rdd.RDD
 
 // Logistic regression
 import org.apache.spark.mllib.classification.{LogisticRegressionModel, LogisticRegressionWithLBFGS}
@@ -103,8 +103,8 @@ def eval_kmeans(job: Job): Unit = {
 
     // Create and train the model
     val p = job.model_params
-    val clusters = p("clusters")
-    val iterations = p("iterations")
+    val clusters = p("clusters").toInt
+    val iterations = p("iterations").toInt
 
     var start = System.currentTimeMillis
     val kmeans = KMeans.train(training, clusters, iterations)
@@ -123,10 +123,11 @@ def eval_gradient_boosted_trees(job: Job): Unit = {
     val (training, test) = load_dataset(DATASET_FILEPATH)
     val boostingStrategy = BoostingStrategy.defaultParams("Classification")
 
-    boostingStrategy.numIterations = job.model_params("iterations")
-    boostingStrategy.treeStrategy.numClasses = job.model_params("numClasses")
-    boostingStrategy.treeStrategy.maxDepth = job.model_params("depth")
-    boostingStrategy.treeStrategy.categoricalFeaturesInfo = decode_categories(job.model_params("categoricalFeatures"))
+    val p = job.model_params
+    boostingStrategy.numIterations = p("iterations").toInt
+    boostingStrategy.treeStrategy.numClasses = p("numClasses").toInt
+    boostingStrategy.treeStrategy.maxDepth = p("depth").toInt
+    boostingStrategy.treeStrategy.categoricalFeaturesInfo = decode_categories(p("categoricalFeatures"))
 
     var start = System.currentTimeMillis
     val model = GradientBoostedTrees.train(training, boostingStrategy)
@@ -148,11 +149,11 @@ def eval_random_forest(job: Job): Unit = {
     val p = job.model_params
     val categoricalFeaturesInfo = decode_categories(p("categoricalFeatures"))
     val featureSubsetStrategy = p("featureSubsetStrategy")
-    val numClasses = p("numClasses")
+    val numClasses = p("numClasses").toInt
     val impurity = p("impurity")
-    val numTrees = p("trees")
-    val maxDepth = p("depth")
-    val maxBins = p("bins")
+    val numTrees = p("trees").toInt
+    val maxDepth = p("depth").toInt
+    val maxBins = p("bins").toInt
 
     var start = System.currentTimeMillis
     val model = RandomForest.trainClassifier(training, numClasses, categoricalFeaturesInfo, numTrees, featureSubsetStrategy, impurity, maxDepth, maxBins)
@@ -173,10 +174,10 @@ def eval_decision_tree(job: Job): Unit = {
 
     val p = job.model_params
     val categoricalFeaturesInfo = decode_categories(p("categoricalFeatures"))
-    val numClasses = p("numClasses")
+    val numClasses = p("numClasses").toInt
     val impurity = p("impurity")
-    val maxDepth = p("depth")
-    val maxBins = p("bins")
+    val maxDepth = p("depth").toInt
+    val maxBins = p("bins").toInt
 
     var start = System.currentTimeMillis
     val model = DecisionTree.trainClassifier(training, numClasses, categoricalFeaturesInfo, impurity, maxDepth, maxBins)
@@ -196,10 +197,10 @@ def eval_svm(job: Job): Unit = {
     val (training, test) = load_dataset(DATASET_FILEPATH)
 
     val p = job.model_params
-    val stepSize = p("stepSize")
-    val numIterations = p("iterations")
-    val regParam = p("regParam")
-    val miniBatchFraction = p("miniBatchFraction")
+    val stepSize = p("stepSize").toDouble
+    val numIterations = p("iterations").toInt
+    val regParam = p("regParam").toDouble
+    val miniBatchFraction = p("miniBatchFraction").toDouble
 
     var start = System.currentTimeMillis
     val model = SVMWithSGD.train(training, numIterations, stepSize, regParam, miniBatchFraction)
@@ -220,7 +221,7 @@ def eval_naive_bayes(job: Job): Unit = {
     val (training, test) = load_dataset(DATASET_FILEPATH)
 
     val p = job.model_params
-    val lambda = p("lambda")
+    val lambda = p("lambda").toDouble
     val modelType = p("modelType")
 
     var start = System.currentTimeMillis
