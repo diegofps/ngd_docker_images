@@ -41,6 +41,8 @@ import org.apache.spark.mllib.classification.{NaiveBayes, NaiveBayesModel}
 case class Job(idd: Integer, model_type: String, model_params: Map[String, String])
 case class Result(acc: Double, training_time: Double, evaluation_time: Double, job: Job)
 
+object Tunner {
+
 val DATASET_FILEPATH = "/spark/data/mllib/sample_libsvm_data.txt"
 
 val TYPE_GRADIENT_BOOSTED_TREES = "gradient_boosted_trees"
@@ -242,22 +244,22 @@ def eval(job: Job): Integer = {
     if (job.model_type == TYPE_LOGISTIC_REGRESSION)
         return eval_logistic_regression(job)
         
-    else-if (job.model_type == TYPE_KMEANS)
+    else if (job.model_type == TYPE_KMEANS)
         return eval_kmeans(job)
     
-    else-if (job.model_type == TYPE_GRADIENT_BOOSTED_TREES)
+    else if (job.model_type == TYPE_GRADIENT_BOOSTED_TREES)
         return eval_gradient_boosted_trees(job)
     
-    else-if (job.model_type == TYPE_RANDOM_FOREST)
+    else if (job.model_type == TYPE_RANDOM_FOREST)
         return eval_random_forest(job)
     
-    else-if (job.model_type == TYPE_DECISION_TREE)
+    else if (job.model_type == TYPE_DECISION_TREE)
         return eval_decision_tree(job)
     
-    else-if (job.model_type == TYPE_SVM)
+    else if (job.model_type == TYPE_SVM)
         return eval_svm(job)
     
-    else-if (job.model_type == TYPE_NAIVE_BAYES)
+    else if (job.model_type == TYPE_NAIVE_BAYES)
         return eval_naive_bayes(job)
     
     return 0
@@ -449,8 +451,6 @@ def add_naive_bayes(idd: Integer, valRepetitions: Range, jobs: ListBuffer[Job]):
 ///////////////////////////////////////////////////////////////////////////////////////////
 // Main interface
 ///////////////////////////////////////////////////////////////////////////////////////////
-
-object Tunner {
 
 def main(args: Array[String]): Unit = {
 
