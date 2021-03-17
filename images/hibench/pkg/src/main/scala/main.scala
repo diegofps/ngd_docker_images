@@ -7,6 +7,10 @@ import org.apache.spark.mllib.util.MLUtils
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.rdd.RDD
 
+// Concurrency and Futures
+import java.util.concurrent.Executors
+import scala.concurrent._
+
 // Logistic regression
 import org.apache.spark.mllib.classification.{LogisticRegressionModel, LogisticRegressionWithLBFGS}
 
@@ -455,13 +459,19 @@ def main(args: Array[String]): Unit = {
     if (target == "naive_bayes" || target == "all" )
         add_naive_bayes(training, test, valRepetitions, jobs)
 
+    // Run in parallel
+    implicit val ec = concurrent.ExecutionContext.fromExecutorService(Executors.newWorkStealingPool(8))
+    val results = jobs.map(x => Future {
+        eval(x)
+    })
+
     // Apply map to evaluate them
-    var rdd = spark.sparkContext.parallelize(jobs)
-    rdd = rdd.repartition(rdd.count().toInt)
-    val rdd2 = rdd.map(eval)
+    // var rdd = spark.sparkContext.parallelize(jobs)
+    // rdd = rdd.repartition(rdd.count().toInt)
+    // val results = rdd.map(eval)
 
     // Print results (just for sanity check)
-    rdd2.foreach(println)
+    results.foreach(println)
 }
 
 }
