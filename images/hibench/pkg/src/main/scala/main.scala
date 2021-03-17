@@ -8,6 +8,7 @@ import org.apache.spark.sql.SparkSession
 import org.apache.spark.rdd.RDD
 
 // Concurrency and Futures
+import scala.concurrent.duration.Duration
 import java.util.concurrent.Executors
 import scala.concurrent._
 
@@ -42,7 +43,7 @@ import org.apache.spark.mllib.classification.{NaiveBayes, NaiveBayesModel}
 // Extra types and utils
 ///////////////////////////////////////////////////////////////////////////////////////////
 
-case class Job(training: RDD[LabeledPoint], test: RDD[LabeledPoint], model_type: String, model_params: Map[String, String])
+case class Job(repetitions: Int, training: RDD[LabeledPoint], test: RDD[LabeledPoint], model_type: String, model_params: Map[String, String])
 case class Result(acc: Double, training_time: Double, evaluation_time: Double, job: Job)
 
 object Tunner {
@@ -244,30 +245,35 @@ def eval_naive_bayes(job: Job): Result = {
     return Result(auroc, trainingTime, testTime, job)
 }
 
-def eval(job: Job): Result = {
+def reduce_results(results: Vector[Result]): Unit = {
+
+}
+
+def eval(job: Job): Seq[Result] = {
 
     if (job.model_type == TYPE_LOGISTIC_REGRESSION)
-        return eval_logistic_regression(job)
+        return (1 to job.repetitions).map(x => eval_logistic_regression(job))
         
     else if (job.model_type == TYPE_KMEANS)
-        return eval_kmeans(job)
+        return (1 to job.repetitions).map(x => eval_kmeans(job))
     
     else if (job.model_type == TYPE_GRADIENT_BOOSTED_TREES)
-        return eval_gradient_boosted_trees(job)
+        return (1 to job.repetitions).map(x => eval_gradient_boosted_trees(job))
     
     else if (job.model_type == TYPE_RANDOM_FOREST)
-        return eval_random_forest(job)
+        return (1 to job.repetitions).map(x => eval_random_forest(job))
     
     else if (job.model_type == TYPE_DECISION_TREE)
-        return eval_decision_tree(job)
+        return (1 to job.repetitions).map(x => eval_decision_tree(job))
     
     else if (job.model_type == TYPE_SVM)
-        return eval_svm(job)
+        return (1 to job.repetitions).map(x => eval_svm(job))
     
     else if (job.model_type == TYPE_NAIVE_BAYES)
-        return eval_naive_bayes(job)
+        return (1 to job.repetitions).map(x => eval_naive_bayes(job))
     
-    throw new RuntimeException("Invalid model_type: " + job.model_type)
+    else
+        throw new RuntimeException("Invalid model_type: " + job.model_type)
 }
 
 
@@ -275,31 +281,26 @@ def eval(job: Job): Result = {
 // Add jobs
 ///////////////////////////////////////////////////////////////////////////////////////////
 
-def add_logistic_regression(training: RDD[LabeledPoint], test: RDD[LabeledPoint], valRepetitions: Range, jobs: ListBuffer[Job]): Unit = {
-
-    for (repetition <- valRepetitions) {
-        jobs.append(Job(training, test, TYPE_LOGISTIC_REGRESSION, Map()))
-    }
+def add_logistic_regression(training: RDD[LabeledPoint], test: RDD[LabeledPoint], repetitions: Int, jobs: ListBuffer[Job]): Unit = {
+    jobs.append(Job(repetitions, training, test, TYPE_LOGISTIC_REGRESSION, Map()))
 }
 
-def add_kmeans(training: RDD[LabeledPoint], test: RDD[LabeledPoint], valRepetitions: Range, jobs: ListBuffer[Job]): Unit = {
+def add_kmeans(training: RDD[LabeledPoint], test: RDD[LabeledPoint], repetitions: Int, jobs: ListBuffer[Job]): Unit = {
 
     val numIterations = Range(10, 60, 10) // 5
     val numClusters = Range(1, 11) // 10
 
     for (clusters <- numClusters) {
         for (iterations <- numIterations) {
-            for (repetition <- valRepetitions) {
-                jobs.append(Job(training, test, TYPE_KMEANS, Map(
-                    "clusters" -> clusters.toString,
-                    "iterations" -> iterations.toString
-                )))
-            }
+            jobs.append(Job(repetitions, training, test, TYPE_KMEANS, Map(
+                "clusters" -> clusters.toString,
+                "iterations" -> iterations.toString
+            )))
         }
     }
 }
 
-def add_gradient_boosted_trees(training: RDD[LabeledPoint], test: RDD[LabeledPoint], valRepetitions: Range, jobs: ListBuffer[Job]): Unit = {
+def add_gradient_boosted_trees(training: RDD[LabeledPoint], test: RDD[LabeledPoint], repetitions: Int, jobs: ListBuffer[Job]): Unit = {
 
     val numIterations = Range(3, 30, 3) // 9
     val valDepths = Range(1, 7) // 6
@@ -309,19 +310,17 @@ def add_gradient_boosted_trees(training: RDD[LabeledPoint], test: RDD[LabeledPoi
 
     for (depth <- valDepths) {
         for (iterations <- numIterations) {
-            for (repetition <- valRepetitions) {
-                jobs.append(Job(training, test, TYPE_GRADIENT_BOOSTED_TREES, Map(
-                    "depth" -> depth.toString,
-                    "iterations" -> iterations.toString,
-                    "numClasses" -> numClasses.toString,
-                    "categoricalFeatures" -> categoricalFeatures
-                )))
-            }
+            jobs.append(Job(repetitions, training, test, TYPE_GRADIENT_BOOSTED_TREES, Map(
+                "depth" -> depth.toString,
+                "iterations" -> iterations.toString,
+                "numClasses" -> numClasses.toString,
+                "categoricalFeatures" -> categoricalFeatures
+            )))
         }
     }
 }
 
-def add_random_forest(training: RDD[LabeledPoint], test: RDD[LabeledPoint], valRepetitions: Range, jobs: ListBuffer[Job]): Unit = {
+def add_random_forest(training: RDD[LabeledPoint], test: RDD[LabeledPoint], repetitions: Int, jobs: ListBuffer[Job]): Unit = {
 
     val valImpurity = Array("gini", "entropy") // 2
     val valBins = Range(32, 256, 32) // 7
@@ -336,24 +335,22 @@ def add_random_forest(training: RDD[LabeledPoint], test: RDD[LabeledPoint], valR
         for (bins <- valBins) {
             for (trees <- valTrees) {
                 for (depth <- valDepths) {
-                    for (repetition <- valRepetitions) {
-                        jobs.append(Job(training, test, TYPE_RANDOM_FOREST, Map(
-                            "impurity" -> impurity,
-                            "bins" -> bins.toString,
-                            "trees" -> trees.toString,
-                            "depth" -> depth.toString,
-                            "categoricalFeatures" -> categoricalFeatures.toString,
-                            "featureSubsetStrategy" -> featureSubsetStrategy.toString,
-                            "numClasses" -> numClasses.toString
-                        )))
-                    }
+                    jobs.append(Job(repetitions, training, test, TYPE_RANDOM_FOREST, Map(
+                        "impurity" -> impurity,
+                        "bins" -> bins.toString,
+                        "trees" -> trees.toString,
+                        "depth" -> depth.toString,
+                        "categoricalFeatures" -> categoricalFeatures.toString,
+                        "featureSubsetStrategy" -> featureSubsetStrategy.toString,
+                        "numClasses" -> numClasses.toString
+                    )))
                 }
             }
         }
     }
 }
 
-def add_decision_tree(training: RDD[LabeledPoint], test: RDD[LabeledPoint], valRepetitions: Range, jobs: ListBuffer[Job]): Unit = {
+def add_decision_tree(training: RDD[LabeledPoint], test: RDD[LabeledPoint], repetitions: Int, jobs: ListBuffer[Job]): Unit = {
     
     val valImpurity = Array("gini", "entropy") // 2
     val valBins = Range(32, 256, 32) // 7
@@ -365,21 +362,19 @@ def add_decision_tree(training: RDD[LabeledPoint], test: RDD[LabeledPoint], valR
     for (impurity <- valImpurity) {
         for (bins <- valBins) {
             for (depth <- valDepths) {
-                for (repetition <- valRepetitions) {
-                    jobs.append(Job(training, test, TYPE_DECISION_TREE, Map(
-                        "impurity" -> impurity,
-                        "bins" -> bins.toString,
-                        "depth" -> depth.toString,
-                        "categoricalFeatures" -> categoricalFeatures,
-                        "numClasses" -> numClasses.toString
-                    )))
-                }
+                jobs.append(Job(repetitions, training, test, TYPE_DECISION_TREE, Map(
+                    "impurity" -> impurity,
+                    "bins" -> bins.toString,
+                    "depth" -> depth.toString,
+                    "categoricalFeatures" -> categoricalFeatures,
+                    "numClasses" -> numClasses.toString
+                )))
             }
         }
     }
 }
 
-def add_svm(training: RDD[LabeledPoint], test: RDD[LabeledPoint], valRepetitions: Range, jobs: ListBuffer[Job]): Unit = {
+def add_svm(training: RDD[LabeledPoint], test: RDD[LabeledPoint], repetitions: Int, jobs: ListBuffer[Job]): Unit = {
 
     val valStepSize = Array(0.01, 0.1, 1.0, 10.0) // 4
     val valIterations = Range(100, 2100, 100) // 20
@@ -390,34 +385,29 @@ def add_svm(training: RDD[LabeledPoint], test: RDD[LabeledPoint], valRepetitions
         for (iterations <- valIterations) {
             for (regParam <- valRegParam) {
                 for (miniBatchFraction <- valMiniBatchFraction) {
-                    for (repetition <- valRepetitions) {
-                        jobs.append(Job(training, test, TYPE_SVM, Map(
-                            "stepSize" -> stepSize.toString,
-                            "iterations" -> iterations.toString,
-                            "regParam" -> regParam.toString,
-                            "miniBatchFraction" -> miniBatchFraction.toString
-                        )))
-                    }
+                    jobs.append(Job(repetitions, training, test, TYPE_SVM, Map(
+                        "stepSize" -> stepSize.toString,
+                        "iterations" -> iterations.toString,
+                        "regParam" -> regParam.toString,
+                        "miniBatchFraction" -> miniBatchFraction.toString
+                    )))
                 }
             }
         }
     }
 }
 
-def add_naive_bayes(training: RDD[LabeledPoint], test: RDD[LabeledPoint], valRepetitions: Range, jobs: ListBuffer[Job]): Unit = {
+def add_naive_bayes(training: RDD[LabeledPoint], test: RDD[LabeledPoint], repetitions: Int, jobs: ListBuffer[Job]): Unit = {
     
     val valLambda = Array(0.001, 0.01, 0.1, 1.0, 10.0) // 5
     val valModelType = Array("multinomial", "bernoulli") // 2
 
     for (lambda <- valLambda) {
         for (modelType <- valModelType) {
-            for (repetition <- valRepetitions) {
-
-                jobs.append(Job(training, test, TYPE_NAIVE_BAYES, Map(
-                    "lambda" -> lambda.toString,
-                    "modelType" -> modelType
-                )))
-            }
+            jobs.append(Job(repetitions, training, test, TYPE_NAIVE_BAYES, Map(
+                "lambda" -> lambda.toString,
+                "modelType" -> modelType
+            )))
         }
     }
 }
@@ -434,36 +424,39 @@ def main(args: Array[String]): Unit = {
 
     val numRepetitions = if (args.length >= 2) args(1).toInt else 10
     val target = if (args.length >= 1) args(0) else "all"
-    val valRepetitions = Range(1, numRepetitions)
+    // val valRepetitions = Range(1, numRepetitions)
     val jobs = ListBuffer[Job]()
 
     // Create individual jobs
     if (target == "logistic_regression" || target == "all" )
-        add_logistic_regression(training, test, valRepetitions, jobs)
+        add_logistic_regression(training, test, numRepetitions, jobs)
     
     if (target == "kmeans" || target == "all" )
-        add_kmeans(training, test, valRepetitions, jobs)
+        add_kmeans(training, test, numRepetitions, jobs)
     
     if (target == "gradient_boosted_trees" || target == "all" )
-        add_gradient_boosted_trees(training, test, valRepetitions, jobs)
+        add_gradient_boosted_trees(training, test, numRepetitions, jobs)
 
     if (target == "random_forest" || target == "all" )
-        add_random_forest(training, test, valRepetitions, jobs)
+        add_random_forest(training, test, numRepetitions, jobs)
 
     if (target == "decision_tree" || target == "all" )
-        add_decision_tree(training, test, valRepetitions, jobs)
+        add_decision_tree(training, test, numRepetitions, jobs)
 
     if (target == "svm" || target == "all" )
-        add_svm(training, test, valRepetitions, jobs)
+        add_svm(training, test, numRepetitions, jobs)
         
     if (target == "naive_bayes" || target == "all" )
-        add_naive_bayes(training, test, valRepetitions, jobs)
+        add_naive_bayes(training, test, numRepetitions, jobs)
 
     // Run in parallel
     implicit val ec = concurrent.ExecutionContext.fromExecutorService(Executors.newWorkStealingPool(8))
-    val results = jobs.map(x => Future {
+    val futures = jobs.map(x => Future {
         eval(x)
     })
+
+    futures.foreach(x => Await.ready(x, Duration.Inf))
+    val results = futures.flatMap(x => x.value.last.get)
 
     // Apply map to evaluate them
     // var rdd = spark.sparkContext.parallelize(jobs)
