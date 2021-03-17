@@ -38,7 +38,7 @@ import org.apache.spark.mllib.classification.{NaiveBayes, NaiveBayesModel}
 // Extra types and utils
 ///////////////////////////////////////////////////////////////////////////////////////////
 
-case class Job(model_type: String, model_params: Map[String, String])
+case class Job(training: RDD[LabeledPoint], test: RDD[LabeledPoint], model_type: String, model_params: Map[String, String])
 case class Result(acc: Double, training_time: Double, evaluation_time: Double, job: Job)
 
 object Tunner {
@@ -52,8 +52,6 @@ val TYPE_DECISION_TREE = "decision_tree"
 val TYPE_NAIVE_BAYES = "naive_bayes"
 val TYPE_KMEANS = "kmeans"
 val TYPE_SVM = "svm"
-
-val spark = SparkSession.builder.appName("Tunner").getOrCreate()
 
 
 def encode_categories(idds: Map[Int, Int]): String = {
@@ -70,13 +68,13 @@ def decode_categories(idds: String): Map[Int, Int] = {
         return idds.split(" ").map(x => x.split(":")).map(x => (x(0).toInt, x(1).toInt)).toMap
 }
 
-def load_dataset(filepath: String):(RDD[LabeledPoint], RDD[LabeledPoint]) = {
+def load_dataset(spark: SparkSession, filepath: String):(RDD[LabeledPoint], RDD[LabeledPoint]) = {
     val data = MLUtils.loadLibSVMFile(spark.sparkContext, filepath)
     val Array(training, test) = data.randomSplit(Array(0.6, 0.4), seed = 11L)
     training.cache()
     test.cache()
     return (training, test)
-} 
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 // Eval jobs
@@ -84,14 +82,14 @@ def load_dataset(filepath: String):(RDD[LabeledPoint], RDD[LabeledPoint]) = {
 
 def eval_logistic_regression(job: Job): Result = {
 
-    val (training, test) = load_dataset(DATASET_FILEPATH)
+    //val (training, test) = load_dataset(DATASET_FILEPATH)
 
     var start = System.currentTimeMillis
-    val model = new LogisticRegressionWithLBFGS().setNumClasses(2).run(training)
+    val model = new LogisticRegressionWithLBFGS().setNumClasses(2).run(job.training)
     val trainingTime = (System.currentTimeMillis - start) / 1000.00
 
     start = System.currentTimeMillis
-    val predictionAndLabel = test.map(p => (model.predict(p.features), p.label))
+    val predictionAndLabel = job.test.map(p => (model.predict(p.features), p.label))
     val testTime = (System.currentTimeMillis - start) / 1000.00
 
     val auroc = new BinaryClassificationMetrics(predictionAndLabel).areaUnderROC()
@@ -102,9 +100,9 @@ def eval_logistic_regression(job: Job): Result = {
 def eval_kmeans(job: Job): Result = {
 
     // Prepare dataset
-    val (_training, _test) = load_dataset(DATASET_FILEPATH)
-    val training = _training.map(x => x.features)
-    val test = _test.map(x => x.features)
+    // val (_training, _test) = load_dataset(DATASET_FILEPATH)
+    val training = job.training.map(x => x.features)
+    val test = job.test.map(x => x.features)
 
     // Create and train the model
     val p = job.model_params
@@ -125,7 +123,7 @@ def eval_kmeans(job: Job): Result = {
 
 def eval_gradient_boosted_trees(job: Job): Result = {
 
-    val (training, test) = load_dataset(DATASET_FILEPATH)
+    // val (training, test) = load_dataset(DATASET_FILEPATH)
     val boostingStrategy = BoostingStrategy.defaultParams("Classification")
 
     val p = job.model_params
@@ -135,11 +133,11 @@ def eval_gradient_boosted_trees(job: Job): Result = {
     boostingStrategy.treeStrategy.categoricalFeaturesInfo = decode_categories(p("categoricalFeatures"))
 
     var start = System.currentTimeMillis
-    val model = GradientBoostedTrees.train(training, boostingStrategy)
+    val model = GradientBoostedTrees.train(job.training, boostingStrategy)
     val trainingTime = (System.currentTimeMillis - start) / 1000.00
 
     start = System.currentTimeMillis
-    val predictionAndLabel = test.map(p => (model.predict(p.features), p.label))
+    val predictionAndLabel = job.test.map(p => (model.predict(p.features), p.label))
     val testTime = (System.currentTimeMillis - start) / 1000.00
 
     val auroc = new BinaryClassificationMetrics(predictionAndLabel).areaUnderROC()
@@ -149,7 +147,7 @@ def eval_gradient_boosted_trees(job: Job): Result = {
 
 def eval_random_forest(job: Job): Result = {
 
-    val (training, test) = load_dataset(DATASET_FILEPATH)
+    // val (training, test) = load_dataset(DATASET_FILEPATH)
 
     val p = job.model_params
     val categoricalFeaturesInfo = decode_categories(p("categoricalFeatures"))
@@ -161,11 +159,11 @@ def eval_random_forest(job: Job): Result = {
     val maxBins = p("bins").toInt
 
     var start = System.currentTimeMillis
-    val model = RandomForest.trainClassifier(training, numClasses, categoricalFeaturesInfo, numTrees, featureSubsetStrategy, impurity, maxDepth, maxBins)
+    val model = RandomForest.trainClassifier(job.training, numClasses, categoricalFeaturesInfo, numTrees, featureSubsetStrategy, impurity, maxDepth, maxBins)
     val trainingTime = (System.currentTimeMillis - start) / 1000.00
 
     start = System.currentTimeMillis
-    val predictionAndLabel = test.map(p => (model.predict(p.features), p.label))
+    val predictionAndLabel = job.test.map(p => (model.predict(p.features), p.label))
     val testTime = (System.currentTimeMillis - start) / 1000.00
 
     val auroc = new BinaryClassificationMetrics(predictionAndLabel).areaUnderROC()
@@ -175,7 +173,7 @@ def eval_random_forest(job: Job): Result = {
 
 def eval_decision_tree(job: Job): Result = {
 
-    val (training, test) = load_dataset(DATASET_FILEPATH)
+    // val (training, test) = load_dataset(DATASET_FILEPATH)
 
     val p = job.model_params
     val categoricalFeaturesInfo = decode_categories(p("categoricalFeatures"))
@@ -185,11 +183,11 @@ def eval_decision_tree(job: Job): Result = {
     val maxBins = p("bins").toInt
 
     var start = System.currentTimeMillis
-    val model = DecisionTree.trainClassifier(training, numClasses, categoricalFeaturesInfo, impurity, maxDepth, maxBins)
+    val model = DecisionTree.trainClassifier(job.training, numClasses, categoricalFeaturesInfo, impurity, maxDepth, maxBins)
     val trainingTime = (System.currentTimeMillis - start) / 1000.00
 
     start = System.currentTimeMillis
-    val predictionAndLabel = test.map(p => (model.predict(p.features), p.label))
+    val predictionAndLabel = job.test.map(p => (model.predict(p.features), p.label))
     val testTime = (System.currentTimeMillis - start) / 1000.00
 
     val auroc = new BinaryClassificationMetrics(predictionAndLabel).areaUnderROC()
@@ -199,7 +197,7 @@ def eval_decision_tree(job: Job): Result = {
 
 def eval_svm(job: Job): Result = {
 
-    val (training, test) = load_dataset(DATASET_FILEPATH)
+    // val (training, test) = load_dataset(DATASET_FILEPATH)
 
     val p = job.model_params
     val stepSize = p("stepSize").toDouble
@@ -208,12 +206,12 @@ def eval_svm(job: Job): Result = {
     val miniBatchFraction = p("miniBatchFraction").toDouble
 
     var start = System.currentTimeMillis
-    val model = SVMWithSGD.train(training, numIterations, stepSize, regParam, miniBatchFraction)
+    val model = SVMWithSGD.train(job.training, numIterations, stepSize, regParam, miniBatchFraction)
     model.clearThreshold()
     val trainingTime = (System.currentTimeMillis - start) / 1000.00
 
     start = System.currentTimeMillis
-    val predictionAndLabel = test.map(p => (model.predict(p.features), p.label))
+    val predictionAndLabel = job.test.map(p => (model.predict(p.features), p.label))
     val testTime = (System.currentTimeMillis - start) / 1000.00
 
     val auroc = new BinaryClassificationMetrics(predictionAndLabel).areaUnderROC()
@@ -223,18 +221,18 @@ def eval_svm(job: Job): Result = {
 
 def eval_naive_bayes(job: Job): Result = {
 
-    val (training, test) = load_dataset(DATASET_FILEPATH)
+    // val (training, test) = load_dataset(DATASET_FILEPATH)
 
     val p = job.model_params
     val lambda = p("lambda").toDouble
     val modelType = p("modelType")
 
     var start = System.currentTimeMillis
-    val model = NaiveBayes.train(training, lambda, modelType)
+    val model = NaiveBayes.train(job.training, lambda, modelType)
     val trainingTime = (System.currentTimeMillis - start) / 1000.00
 
     start = System.currentTimeMillis
-    val predictionAndLabel = test.map(p => (model.predict(p.features), p.label))
+    val predictionAndLabel = job.test.map(p => (model.predict(p.features), p.label))
     val testTime = (System.currentTimeMillis - start) / 1000.00
 
     val auroc = new BinaryClassificationMetrics(predictionAndLabel).areaUnderROC()
@@ -273,14 +271,14 @@ def eval(job: Job): Result = {
 // Add jobs
 ///////////////////////////////////////////////////////////////////////////////////////////
 
-def add_logistic_regression(spark: SparkSession, valRepetitions: Range, jobs: ListBuffer[Job]): Unit = {
+def add_logistic_regression(training: RDD[LabeledPoint], test: RDD[LabeledPoint], valRepetitions: Range, jobs: ListBuffer[Job]): Unit = {
 
     for (repetition <- valRepetitions) {
-        jobs.append(Job(TYPE_LOGISTIC_REGRESSION, Map()))
+        jobs.append(Job(training, test, TYPE_LOGISTIC_REGRESSION, Map()))
     }
 }
 
-def add_kmeans(spark: SparkSession, valRepetitions: Range, jobs: ListBuffer[Job]): Unit = {
+def add_kmeans(training: RDD[LabeledPoint], test: RDD[LabeledPoint], valRepetitions: Range, jobs: ListBuffer[Job]): Unit = {
 
     val numIterations = Range(10, 60, 10) // 5
     val numClusters = Range(1, 11) // 10
@@ -288,7 +286,7 @@ def add_kmeans(spark: SparkSession, valRepetitions: Range, jobs: ListBuffer[Job]
     for (clusters <- numClusters) {
         for (iterations <- numIterations) {
             for (repetition <- valRepetitions) {
-                jobs.append(Job(TYPE_KMEANS, Map(
+                jobs.append(Job(training, test, TYPE_KMEANS, Map(
                     "clusters" -> clusters.toString,
                     "iterations" -> iterations.toString
                 )))
@@ -297,7 +295,7 @@ def add_kmeans(spark: SparkSession, valRepetitions: Range, jobs: ListBuffer[Job]
     }
 }
 
-def add_gradient_boosted_trees(spark: SparkSession, valRepetitions: Range, jobs: ListBuffer[Job]): Unit = {
+def add_gradient_boosted_trees(training: RDD[LabeledPoint], test: RDD[LabeledPoint], valRepetitions: Range, jobs: ListBuffer[Job]): Unit = {
 
     val numIterations = Range(3, 30, 3) // 9
     val valDepths = Range(1, 7) // 6
@@ -308,7 +306,7 @@ def add_gradient_boosted_trees(spark: SparkSession, valRepetitions: Range, jobs:
     for (depth <- valDepths) {
         for (iterations <- numIterations) {
             for (repetition <- valRepetitions) {
-                jobs.append(Job(TYPE_GRADIENT_BOOSTED_TREES, Map(
+                jobs.append(Job(training, test, TYPE_GRADIENT_BOOSTED_TREES, Map(
                     "depth" -> depth.toString,
                     "iterations" -> iterations.toString,
                     "numClasses" -> numClasses.toString,
@@ -319,7 +317,7 @@ def add_gradient_boosted_trees(spark: SparkSession, valRepetitions: Range, jobs:
     }
 }
 
-def add_random_forest(spark: SparkSession, valRepetitions: Range, jobs: ListBuffer[Job]): Unit = {
+def add_random_forest(training: RDD[LabeledPoint], test: RDD[LabeledPoint], valRepetitions: Range, jobs: ListBuffer[Job]): Unit = {
 
     val valImpurity = Array("gini", "entropy") // 2
     val valBins = Range(32, 256, 32) // 7
@@ -335,7 +333,7 @@ def add_random_forest(spark: SparkSession, valRepetitions: Range, jobs: ListBuff
             for (trees <- valTrees) {
                 for (depth <- valDepths) {
                     for (repetition <- valRepetitions) {
-                        jobs.append(Job(TYPE_RANDOM_FOREST, Map(
+                        jobs.append(Job(training, test, TYPE_RANDOM_FOREST, Map(
                             "impurity" -> impurity,
                             "bins" -> bins.toString,
                             "trees" -> trees.toString,
@@ -351,7 +349,7 @@ def add_random_forest(spark: SparkSession, valRepetitions: Range, jobs: ListBuff
     }
 }
 
-def add_decision_tree(spark: SparkSession, valRepetitions: Range, jobs: ListBuffer[Job]): Unit = {
+def add_decision_tree(training: RDD[LabeledPoint], test: RDD[LabeledPoint], valRepetitions: Range, jobs: ListBuffer[Job]): Unit = {
     
     val valImpurity = Array("gini", "entropy") // 2
     val valBins = Range(32, 256, 32) // 7
@@ -364,7 +362,7 @@ def add_decision_tree(spark: SparkSession, valRepetitions: Range, jobs: ListBuff
         for (bins <- valBins) {
             for (depth <- valDepths) {
                 for (repetition <- valRepetitions) {
-                    jobs.append(Job(TYPE_DECISION_TREE, Map(
+                    jobs.append(Job(training, test, TYPE_DECISION_TREE, Map(
                         "impurity" -> impurity,
                         "bins" -> bins.toString,
                         "depth" -> depth.toString,
@@ -377,7 +375,7 @@ def add_decision_tree(spark: SparkSession, valRepetitions: Range, jobs: ListBuff
     }
 }
 
-def add_svm(spark: SparkSession, valRepetitions: Range, jobs: ListBuffer[Job]): Unit = {
+def add_svm(training: RDD[LabeledPoint], test: RDD[LabeledPoint], valRepetitions: Range, jobs: ListBuffer[Job]): Unit = {
 
     val valStepSize = Array(0.01, 0.1, 1.0, 10.0) // 4
     val valIterations = Range(100, 2100, 100) // 20
@@ -389,7 +387,7 @@ def add_svm(spark: SparkSession, valRepetitions: Range, jobs: ListBuffer[Job]): 
             for (regParam <- valRegParam) {
                 for (miniBatchFraction <- valMiniBatchFraction) {
                     for (repetition <- valRepetitions) {
-                        jobs.append(Job(TYPE_SVM, Map(
+                        jobs.append(Job(training, test, TYPE_SVM, Map(
                             "stepSize" -> stepSize.toString,
                             "iterations" -> iterations.toString,
                             "regParam" -> regParam.toString,
@@ -402,7 +400,7 @@ def add_svm(spark: SparkSession, valRepetitions: Range, jobs: ListBuffer[Job]): 
     }
 }
 
-def add_naive_bayes(spark: SparkSession, valRepetitions: Range, jobs: ListBuffer[Job]): Unit = {
+def add_naive_bayes(training: RDD[LabeledPoint], test: RDD[LabeledPoint], valRepetitions: Range, jobs: ListBuffer[Job]): Unit = {
     
     val valLambda = Array(0.001, 0.01, 0.1, 1.0, 10.0) // 5
     val valModelType = Array("multinomial", "bernoulli") // 2
@@ -411,7 +409,7 @@ def add_naive_bayes(spark: SparkSession, valRepetitions: Range, jobs: ListBuffer
         for (modelType <- valModelType) {
             for (repetition <- valRepetitions) {
 
-                jobs.append(Job(TYPE_NAIVE_BAYES, Map(
+                jobs.append(Job(training, test, TYPE_NAIVE_BAYES, Map(
                     "lambda" -> lambda.toString,
                     "modelType" -> modelType
                 )))
@@ -427,6 +425,9 @@ def add_naive_bayes(spark: SparkSession, valRepetitions: Range, jobs: ListBuffer
 
 def main(args: Array[String]): Unit = {
 
+    val spark = SparkSession.builder.appName("Tunner").getOrCreate()
+    val (training, test) = load_dataset(spark, DATASET_FILEPATH)
+
     val numRepetitions = if (args.length >= 2) args(1).toInt else 10
     val target = if (args.length >= 1) args(0) else "all"
     val valRepetitions = Range(1, numRepetitions)
@@ -434,25 +435,25 @@ def main(args: Array[String]): Unit = {
 
     // Create individual jobs
     if (target == "logistic_regression" || target == "all" )
-        add_logistic_regression(spark, valRepetitions, jobs)
+        add_logistic_regression(training, test, valRepetitions, jobs)
     
     if (target == "kmeans" || target == "all" )
-        add_kmeans(spark, valRepetitions, jobs)
+        add_kmeans(training, test, valRepetitions, jobs)
     
     if (target == "gradient_boosted_trees" || target == "all" )
-        add_gradient_boosted_trees(spark, valRepetitions, jobs)
+        add_gradient_boosted_trees(training, test, valRepetitions, jobs)
 
     if (target == "random_forest" || target == "all" )
-        add_random_forest(spark, valRepetitions, jobs)
+        add_random_forest(training, test, valRepetitions, jobs)
 
     if (target == "decision_tree" || target == "all" )
-        add_decision_tree(spark, valRepetitions, jobs)
+        add_decision_tree(training, test, valRepetitions, jobs)
 
     if (target == "svm" || target == "all" )
-        add_svm(spark, valRepetitions, jobs)
+        add_svm(training, test, valRepetitions, jobs)
         
     if (target == "naive_bayes" || target == "all" )
-        add_naive_bayes(spark, valRepetitions, jobs)
+        add_naive_bayes(training, test, valRepetitions, jobs)
 
     // Apply map to evaluate them
     var rdd = spark.sparkContext.parallelize(jobs)
