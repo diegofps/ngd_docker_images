@@ -49,6 +49,7 @@ case class Result(acc: Double, training_time: Double, evaluation_time: Double, j
 object Tunner {
 
 val DATASET_FILEPATH = "/spark/data/mllib/sample_libsvm_data.txt"
+//val DATASET_FILEPATH = "hdfs://bigdata2-primary:9000/sample_libsvm_data.txt"
 
 val TYPE_GRADIENT_BOOSTED_TREES = "gradient_boosted_trees"
 val TYPE_LOGISTIC_REGRESSION = "logistic_regression"
@@ -376,10 +377,10 @@ def add_decision_tree(training: RDD[LabeledPoint], test: RDD[LabeledPoint], repe
 
 def add_svm(training: RDD[LabeledPoint], test: RDD[LabeledPoint], repetitions: Int, jobs: ListBuffer[Job]): Unit = {
 
-    val valStepSize = Array(0.01, 0.1, 1.0, 10.0) // 4
-    val valIterations = Range(100, 2100, 100) // 20
-    val valRegParam = Array(0.0001, 0.001, 0.01, 0.1, 1.0) // 5
-    val valMiniBatchFraction = Array(1.0, 2.0, 3.0, 4.0, 5.0) // 5
+    val valStepSize = Array(0.01, 0.1, 1.0) // 3
+    val valIterations = Array(100, 500, 1000) // 3
+    val valRegParam = Array(0.001, 0.01, 0.1) // 3
+    val valMiniBatchFraction = Array(1.0, 3.0, 5.0) // 3
 
     for (stepSize <- valStepSize) {
         for (iterations <- valIterations) {
@@ -419,9 +420,12 @@ def add_naive_bayes(training: RDD[LabeledPoint], test: RDD[LabeledPoint], repeti
 
 def main(args: Array[String]): Unit = {
 
-    val spark = SparkSession.builder.appName("Tunner").getOrCreate()
+  val spark = SparkSession.builder.appName("Tunner").getOrCreate()
+  try 
+  {
     val (training, test) = load_dataset(spark, DATASET_FILEPATH)
 
+    val numThreads = if (args.length >= 3) args(2).toInt else 1
     val numRepetitions = if (args.length >= 2) args(1).toInt else 10
     val target = if (args.length >= 1) args(0) else "all"
     // val valRepetitions = Range(1, numRepetitions)
@@ -450,8 +454,18 @@ def main(args: Array[String]): Unit = {
         add_naive_bayes(training, test, numRepetitions, jobs)
 
     // Run in parallel
-    implicit val ec = concurrent.ExecutionContext.fromExecutorService(Executors.newWorkStealingPool(8))
+    //implicit val ec = concurrent.ExecutionContext.fromExecutorService(Executors.newWorkStealingPool(numThreads))
+    implicit val ec = concurrent.ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(numThreads))
+    
+    println("Threads:" + numThreads)
+    println("Jobs:" + jobs.size.toString)
+    println("Dataset:" + DATASET_FILEPATH)
+    println("Repetitions:" + numRepetitions)
+    println("Starting in 5s...")
+    Thread.sleep(1000 * 5)
+
     val futures = jobs.map(x => Future {
+        println("=================================================================== EVALUATING ==================================================")
         eval(x)
     })
 
@@ -465,6 +479,12 @@ def main(args: Array[String]): Unit = {
 
     // Print results (just for sanity check)
     results.foreach(println)
+
+    println("Bye!")
+  } 
+  finally {
+    spark.sparkContext.stop()
+  }
 }
 
 }
