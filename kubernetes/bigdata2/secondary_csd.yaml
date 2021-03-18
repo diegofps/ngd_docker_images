@@ -26,13 +26,15 @@ spec:
       containers:
         - name: bigdata2-secondary-csd
           image: diegofpsouza/hibench:0.0.1
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           volumeMounts:
             - mountPath: /hadoop_data
               name: hadoop-data
           env:
             - name: MODE
               value: secondary
+            - name: LOG_MODE
+              value: hadoop_secondary
           ports:
             - containerPort: 2181
             - containerPort: 7077

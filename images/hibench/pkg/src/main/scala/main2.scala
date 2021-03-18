@@ -175,12 +175,12 @@ def main(args: Array[String]): Unit = {
     println("Dataset2:" + DATASET2)
     println("Repetitions:" + numRepetitions)
 
-    println("Starting in 3s...")
-    Thread.sleep(1000)
-    println("Starting in 2s...")
-    Thread.sleep(1000)
-    println("Starting in 1s...")
-    Thread.sleep(1000)
+//    println("Starting in 3s...")
+//    Thread.sleep(1000)
+//    println("Starting in 2s...")
+//    Thread.sleep(1000)
+//    println("Starting in 1s...")
+//    Thread.sleep(1000)
 
     val futures = jobs.map(x => Future {
         val tid = Thread.currentThread().getId

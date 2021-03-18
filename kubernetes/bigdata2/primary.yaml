@@ -22,6 +22,8 @@ spec:
     env:
       - name: MODE
         value: primary
+      - name: LOG_MODE
+        value: hadoop_primary
     ports:
       - containerPort: 2181
       - containerPort: 7077
