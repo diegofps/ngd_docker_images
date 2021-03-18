@@ -49,6 +49,7 @@ case class Result(acc: Double, training_time: Double, evaluation_time: Double, j
 object Tunner {
 
 val DATASET_FILEPATH = "/spark/data/mllib/sample_libsvm_data.txt"
+//val DATASET_FILEPATH = "hdfs://bigdata2-primary:9000/sample_libsvm_data.txt"
 
 val TYPE_GRADIENT_BOOSTED_TREES = "gradient_boosted_trees"
 val TYPE_LOGISTIC_REGRESSION = "logistic_regression"
@@ -377,7 +378,7 @@ def add_decision_tree(training: RDD[LabeledPoint], test: RDD[LabeledPoint], repe
 def add_svm(training: RDD[LabeledPoint], test: RDD[LabeledPoint], repetitions: Int, jobs: ListBuffer[Job]): Unit = {
 
     val valStepSize = Array(0.01, 0.1, 1.0, 10.0) // 4
-    val valIterations = Range(100, 2100, 100) // 20
+    val valIterations = Range(100, 1100, 100) // 20
     val valRegParam = Array(0.0001, 0.001, 0.01, 0.1, 1.0) // 5
     val valMiniBatchFraction = Array(1.0, 2.0, 3.0, 4.0, 5.0) // 5
 
