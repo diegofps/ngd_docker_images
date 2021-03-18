@@ -21,7 +21,7 @@ import org.apache.spark.ml.evaluation.ClusteringEvaluator
 // Extra types and utils
 ///////////////////////////////////////////////////////////////////////////////////////////
 
-case class Job2(data: DataFrame, model_type: String, model_params: Map[String, String])
+case class Job2(idd: Int, data: DataFrame, model_type: String, model_params: Map[String, String])
 case class Result2(acc: Double, job: Job2)
 
 object Tunner2 {
@@ -65,8 +65,8 @@ def load_dataset(spark: SparkSession, filepath: String): DataFrame = {
 def eval_logistic_regression(job: Job2): Result2 = {
 
     val p = job.model_params
-    val reg = p("reg").toInt
-    val elasticNet = p("elasticNet").toInt
+    val reg = p("reg").toDouble
+    val elasticNet = p("elasticNet").toDouble
 
     var start = System.currentTimeMillis
     val model = new LogisticRegression().setMaxIter(1000).setRegParam(reg).setElasticNetParam(elasticNet).fit(job.data)
@@ -121,7 +121,7 @@ def add_logistic_regression(data: DataFrame, repetitions: Int, jobs: ListBuffer[
     for (repetition <- 1 to repetitions) {
         for (reg <- valReg) {
             for (elasticNet <- valElasticNet) {
-                jobs.append(Job2(data, TYPE_LOGISTIC_REGRESSION, Map(
+                jobs.append(Job2(jobs.size, data, TYPE_LOGISTIC_REGRESSION, Map(
                     "reg" -> reg.toString,
                     "elasticNet" -> elasticNet.toString
                 )))
@@ -136,7 +136,7 @@ def add_kmeans(data: DataFrame, repetitions: Int, jobs: ListBuffer[Job2]): Unit 
 
     for (repetition <- 1 to repetitions) {
         for (clusters <- valClusters) {
-            jobs.append(Job2(data, TYPE_KMEANS, Map(
+            jobs.append(Job2(jobs.size, data, TYPE_KMEANS, Map(
                 "clusters" -> clusters.toString,
             )))
         }
@@ -174,12 +174,20 @@ def main(args: Array[String]): Unit = {
     println("Dataset1:" + DATASET1)
     println("Dataset2:" + DATASET2)
     println("Repetitions:" + numRepetitions)
-    println("Starting in 5s...")
-    Thread.sleep(1000 * 5)
+
+    println("Starting in 3s...")
+    Thread.sleep(1000)
+    println("Starting in 2s...")
+    Thread.sleep(1000)
+    println("Starting in 1s...")
+    Thread.sleep(1000)
 
     val futures = jobs.map(x => Future {
-        println("=================================================================== EVALUATING ===================================================================")
-        eval(x)
+        val tid = Thread.currentThread().getId
+        println(s"=== ${tid}: STARTING ${x.idd} / ${jobs.size} - ${x.model_type} ===")
+        val result = eval(x)
+        println(s"=== ${tid}: FINISHED ${x.idd} / ${jobs.size} - ${x.model_type} ===")
+        result
     })
 
     futures.foreach(x => Await.ready(x, Duration.Inf))
@@ -188,6 +196,8 @@ def main(args: Array[String]): Unit = {
     results.foreach(println)
 
     println("Bye!")
+    spark.stop()
+    System.exit(0)    
 }
 
 }
