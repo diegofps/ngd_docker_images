@@ -26,8 +26,9 @@ case class Result2(acc: Double, job: Job2)
 
 object Tunner2 {
 
-val DATASET1 = "/spark/data/mllib/sample_libsvm_data.txt"
-val DATASET2 = "/spark/data/mllib/sample_kmeans_data.txt"
+val DATASET_CLASSIFIERS = "/spark/data/mllib/sample_libsvm_data.txt"
+//val DATASET_KMEANS = "/spark/data/mllib/sample_kmeans_data.txt"
+val DATASET_KMEANS = "hdfs://bigdata2-primary:9000/sample_kmeans_data.txt"
 
 val TYPE_GRADIENT_BOOSTED_TREES = "gradient_boosted_trees"
 val TYPE_LOGISTIC_REGRESSION = "logistic_regression"
@@ -150,37 +151,47 @@ def add_kmeans(data: DataFrame, repetitions: Int, jobs: ListBuffer[Job2]): Unit 
 
 def main(args: Array[String]): Unit = {
 
-    val spark = SparkSession.builder.appName("Tunner").getOrCreate()
-    val data1 = load_dataset(spark, DATASET1)
-    val data2 = load_dataset(spark, DATASET2)
+    var datasetFilepath = DATASET_CLASSIFIERS
+    var model = "kmeans"
+    var numRepetitions = 10
+    var numThreads = 1
 
-    val target = if (args.length >= 1) args(0) else "all"
-    val numRepetitions = if (args.length >= 2) args(1).toInt else 10
-    val numThreads = if (args.length >= 3) args(2).toInt else 1
-    
+    for (arg <- args) {
+      if (arg.startsWith("-m="))
+        model = arg.drop(3)
+
+      else if (arg.startsWith("-ds="))
+        datasetFilepath = arg.drop(4)
+
+      else if (arg.startsWith("-t="))
+        numThreads = arg.drop(3).toInt
+
+      else if (arg.startsWith("-r="))
+        numRepetitions = arg.drop(3).toInt
+
+      else
+        println("Unexpected parameter: " + arg)
+    }
+
+    val startedAt = System.currentTimeMillis()
+    val spark = SparkSession.builder.appName("Tunner").getOrCreate()
+    val data = load_dataset(spark, datasetFilepath)
     val jobs = ListBuffer[Job2]()
 
-    if (target == "lr" || target == "all" )
-        add_logistic_regression(data1, numRepetitions, jobs)
+    if (model == "lr" || model == "all" )
+        add_logistic_regression(data, numRepetitions, jobs)
     
-    if (target == "kmeans" || target == "all" )
-        add_kmeans(data2, numRepetitions, jobs)
+    if (model == "kmeans" || model == "all" )
+        add_kmeans(data, numRepetitions, jobs)
     
-    //implicit val ec = concurrent.ExecutionContext.fromExecutorService(Executors.newWorkStealingPool(numThreads))
-    implicit val ec = concurrent.ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(numThreads))
-
+    println("Model:" + model)
     println("Threads:" + numThreads)
     println("Jobs:" + jobs.size.toString)
-    println("Dataset1:" + DATASET1)
-    println("Dataset2:" + DATASET2)
+    println("Dataset:" + datasetFilepath)
     println("Repetitions:" + numRepetitions)
 
-//    println("Starting in 3s...")
-//    Thread.sleep(1000)
-//    println("Starting in 2s...")
-//    Thread.sleep(1000)
-//    println("Starting in 1s...")
-//    Thread.sleep(1000)
+    //implicit val ec = concurrent.ExecutionContext.fromExecutorService(Executors.newWorkStealingPool(numThreads))
+    implicit val ec = concurrent.ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(numThreads))
 
     val futures = jobs.map(x => Future {
         val tid = Thread.currentThread().getId
@@ -193,8 +204,11 @@ def main(args: Array[String]): Unit = {
     futures.foreach(x => Await.ready(x, Duration.Inf))
     val results = futures.map(x => x.value.last.get)
 
+    val ellapsed = (System.currentTimeMillis() - startedAt) / 1000.0
+
     results.foreach(println)
 
+    println("Ellapsed time:" + ellapsed)
     println("Bye!")
     spark.stop()
     System.exit(0)    
