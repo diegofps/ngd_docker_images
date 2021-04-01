@@ -18,7 +18,7 @@ spec:
   containers:
   - name: bigdata2-client
     image: diegofpsouza/hibench:0.0.1
-    imagePullPolicy: Always
+    imagePullPolicy: IfNotPresent
     volumeMounts:
       - mountPath: /ipsms
         name: shared

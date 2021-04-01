@@ -1,4 +1,4 @@
-package br.com.wespa.ngd.spark.parametertunning
+package br.com.wespa.ngd.spark.automl
 
 import scala.collection.mutable.ListBuffer
 import org.apache.spark.sql.SparkSession
@@ -9,12 +9,48 @@ import scala.concurrent.duration.Duration
 import java.util.concurrent.Executors
 import scala.concurrent._
 
+// Decision Tree
+import org.apache.spark.ml.Pipeline
+import org.apache.spark.ml.classification.DecisionTreeClassificationModel
+import org.apache.spark.ml.classification.DecisionTreeClassifier
+import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
+import org.apache.spark.ml.feature.{IndexToString, StringIndexer, VectorIndexer}
+
+// Random Forest
+import org.apache.spark.ml.Pipeline
+import org.apache.spark.ml.classification.{RandomForestClassificationModel, RandomForestClassifier}
+import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
+import org.apache.spark.ml.feature.{IndexToString, StringIndexer, VectorIndexer}
+
 // Logistic Regression
 import org.apache.spark.ml.classification.LogisticRegression
 
 // K-Means
 import org.apache.spark.ml.clustering.KMeans
 import org.apache.spark.ml.evaluation.ClusteringEvaluator
+
+// Gradient Boosted Trees
+import org.apache.spark.ml.Pipeline
+import org.apache.spark.ml.classification.{GBTClassificationModel, GBTClassifier}
+import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
+import org.apache.spark.ml.feature.{IndexToString, StringIndexer, VectorIndexer}
+
+// MLP
+import org.apache.spark.ml.classification.MultilayerPerceptronClassifier
+import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
+
+// Naive Bayes
+import org.apache.spark.ml.classification.NaiveBayes
+import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
+
+// Factorization Machine
+import org.apache.spark.ml.Pipeline
+import org.apache.spark.ml.classification.{FMClassificationModel, FMClassifier}
+import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
+import org.apache.spark.ml.feature.{IndexToString, MinMaxScaler, StringIndexer}
+
+// Linear SVC
+import org.apache.spark.ml.classification.LinearSVC
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -31,12 +67,14 @@ val DATASET_CLASSIFIERS = "/spark/data/mllib/sample_libsvm_data.txt"
 val DATASET_KMEANS = "hdfs://bigdata2-primary:9000/sample_kmeans_data.txt"
 
 val TYPE_GRADIENT_BOOSTED_TREES = "gradient_boosted_trees"
+val TYPE_FACTORIZATION_MACHINE = "factorization_machine"
 val TYPE_LOGISTIC_REGRESSION = "logistic_regression"
 val TYPE_RANDOM_FOREST = "random_forest"
 val TYPE_DECISION_TREE = "decision_tree"
 val TYPE_NAIVE_BAYES = "naive_bayes"
 val TYPE_KMEANS = "kmeans"
-val TYPE_SVM = "svm"
+val TYPE_SVC = "svc"
+val TYPE_MLP = "mlp"
 
 
 def encode_categories(idds: Map[Int, Int]): String = {
@@ -62,6 +100,229 @@ def load_dataset(spark: SparkSession, filepath: String): DataFrame = {
 ///////////////////////////////////////////////////////////////////////////////////////////
 // Eval jobs
 ///////////////////////////////////////////////////////////////////////////////////////////
+
+def eval_svc(job: Job2): Result2 = {
+    
+    val p = job.model_params
+    val regParam = p("regParam").toDouble
+
+    // Prepare the data
+    val Array(trainingData, testData) = job.data.randomSplit(Array(0.7, 0.3))
+
+    // Create the model trainer
+    val svc = new LinearSVC()
+        .setMaxIter(10)
+        .setRegParam(regParam)
+
+    // Train
+    val model = svc.fit(trainingData)
+
+    // Test
+    val result = model.transform(testData)
+
+    val predictionAndLabels = result.select("prediction", "label")
+    val evaluator = new MulticlassClassificationEvaluator().setMetricName("accuracy")
+    val accuracy = evaluator.evaluate(predictionAndLabels)
+
+    return Result2(accuracy, job)
+}
+
+def eval_factorization_machine(job: Job2): Result2 = {
+    val Array(trainingData, testData) = job.data.randomSplit(Array(0.7, 0.3))
+
+    val p = job.model_params
+    val factorSize = p("factorSize").toInt
+    val regParam = p("regParam").toDouble
+
+    val labelIndexer = new StringIndexer()
+        .setInputCol("label")
+        .setOutputCol("indexedLabel")
+        .fit(job.data)
+    
+    val featureScaler = new MinMaxScaler()
+        .setInputCol("features")
+        .setOutputCol("scaledFeatures")
+        .fit(job.data)
+
+    val fm = new FMClassifier()
+        .setLabelCol("indexedLabel")
+        .setFeaturesCol("scaledFeatures")
+        .setFactorSize(factorSize)
+        .setRegParam(regParam)
+        .setStepSize(0.001)
+
+    val labelConverter = new IndexToString()
+        .setInputCol("prediction")
+        .setOutputCol("predictedLabel")
+        .setLabels(labelIndexer.labelsArray(0))
+
+    val pipeline = new Pipeline()
+        .setStages(Array(labelIndexer, featureScaler, fm, labelConverter))
+
+    // Train model.
+    val model = pipeline.fit(trainingData)
+
+    // Make predictions.
+    val predictions = model.transform(testData)
+
+    // Select (prediction, true label) and compute test accuracy.
+    val evaluator = new MulticlassClassificationEvaluator()
+        .setLabelCol("indexedLabel")
+        .setPredictionCol("prediction")
+        .setMetricName("accuracy")
+
+    val accuracy = evaluator.evaluate(predictions)
+
+    return Result2(accuracy, job)
+}
+
+def eval_naive_bayes(job: Job2): Result2 = {
+    val Array(trainingData, testData) = job.data.randomSplit(Array(0.7, 0.3))
+
+    // Create and train the model
+    val model = new NaiveBayes().fit(trainingData)
+
+    // Select example rows to display.
+    val predictions = model.transform(testData)
+
+    // Select (prediction, true label) and compute test error
+    val evaluator = new MulticlassClassificationEvaluator()
+        .setLabelCol("label")
+        .setPredictionCol("prediction")
+        .setMetricName("accuracy")
+    val accuracy = evaluator.evaluate(predictions)
+
+    return Result2(accuracy, job)
+}
+
+def eval_mlp(job: Job2): Result2 = {
+    val p = job.model_params
+    
+    val hiddenNeurons = p("hiddenNeurons").toInt
+
+    // Prepare the dataset
+    val Array(trainingData, testData) = job.data.randomSplit(Array(0.7, 0.3))
+
+    val inputFeatures = trainingData.head().getAs[org.apache.spark.ml.linalg.SparseVector](1).size
+    val outputClasses = 2
+
+    // Create the model
+    val layers = Array[Int](inputFeatures, hiddenNeurons, outputClasses)
+    val trainer = new MultilayerPerceptronClassifier()
+        .setLayers(layers)
+        .setBlockSize(128)
+        .setMaxIter(1000)
+
+    // Train
+    val model = trainer.fit(trainingData)
+
+    // Test
+    val result = model.transform(testData)
+    val predictionAndLabels = result.select("prediction", "label")
+    val evaluator = new MulticlassClassificationEvaluator().setMetricName("accuracy")
+    val accuracy = evaluator.evaluate(predictionAndLabels)
+
+    return Result2(accuracy, job)
+}
+
+def eval_gradient_boosted_trees(job: Job2): Result2 = {
+    val p = job.model_params
+    
+    val maxDepth = p("depth").toInt
+    val maxBins = p("bins").toInt
+
+    val labelIndexer = new StringIndexer().setInputCol("label").setOutputCol("indexedLabel").fit(job.data)
+    val featureIndexer = new VectorIndexer().setInputCol("features").setOutputCol("indexedFeatures").setMaxCategories(4).fit(job.data)
+    val Array(trainingData, testData) = job.data.randomSplit(Array(0.7, 0.3))
+
+    val rf = new GBTClassifier()
+        .setLabelCol("indexedLabel")
+        .setFeaturesCol("indexedFeatures")
+        .setMaxIter(100)
+        .setMaxDepth(maxDepth)
+        .setMaxBins(maxBins)
+
+    val labelConverter = new IndexToString().setInputCol("prediction").setOutputCol("predictedLabel").setLabels(labelIndexer.labelsArray(0))
+    val pipeline = new Pipeline().setStages(Array(labelIndexer, featureIndexer, rf, labelConverter))
+
+    // Train
+    val model = pipeline.fit(trainingData)
+
+    // Test
+    val predictions = model.transform(testData)
+    val evaluator = new MulticlassClassificationEvaluator().setLabelCol("indexedLabel").setPredictionCol("prediction").setMetricName("accuracy")
+    val accuracy = evaluator.evaluate(predictions)
+
+    return Result2(accuracy, job)
+}
+
+def eval_random_forest(job: Job2): Result2 = {
+    val p = job.model_params
+    
+    val numTrees = p("trees").toInt
+    val impurity = p("impurity")
+    val maxDepth = p("depth").toInt
+    val maxBins = p("bins").toInt
+
+    val labelIndexer = new StringIndexer().setInputCol("label").setOutputCol("indexedLabel").fit(job.data)
+    val featureIndexer = new VectorIndexer().setInputCol("features").setOutputCol("indexedFeatures").setMaxCategories(4).fit(job.data)
+    val Array(trainingData, testData) = job.data.randomSplit(Array(0.7, 0.3))
+
+    val rf = new RandomForestClassifier()
+        .setLabelCol("indexedLabel")
+        .setFeaturesCol("indexedFeatures")
+        .setImpurity(impurity)
+        .setMaxDepth(maxDepth)
+        .setMaxBins(maxBins)
+        .setNumTrees(numTrees)
+
+    val labelConverter = new IndexToString().setInputCol("prediction").setOutputCol("predictedLabel").setLabels(labelIndexer.labelsArray(0))
+    val pipeline = new Pipeline().setStages(Array(labelIndexer, featureIndexer, rf, labelConverter))
+
+    // Train
+    val model = pipeline.fit(trainingData)
+
+    // Test
+    val predictions = model.transform(testData)
+    val evaluator = new MulticlassClassificationEvaluator().setLabelCol("indexedLabel").setPredictionCol("prediction").setMetricName("accuracy")
+    val accuracy = evaluator.evaluate(predictions)
+
+    return Result2(accuracy, job)
+}
+
+def eval_decision_tree(job: Job2): Result2 = {
+    val p = job.model_params
+    
+    //val categoricalFeaturesInfo = decode_categories(p("categoricalFeatures"))
+    //val numClasses = p("numClasses").toInt
+    val impurity = p("impurity")
+    val maxDepth = p("depth").toInt
+    val maxBins = p("bins").toInt
+
+    val labelIndexer = new StringIndexer().setInputCol("label").setOutputCol("indexedLabel").fit(job.data)
+    val featureIndexer = new VectorIndexer().setInputCol("features").setOutputCol("indexedFeatures").setMaxCategories(4).fit(job.data)
+    val Array(trainingData, testData) = job.data.randomSplit(Array(0.7, 0.3))
+
+    val dt = new DecisionTreeClassifier()
+        .setLabelCol("indexedLabel")
+        .setFeaturesCol("indexedFeatures")
+        .setImpurity(impurity)
+        .setMaxDepth(maxDepth)
+        .setMaxBins(maxBins)
+
+    val labelConverter = new IndexToString().setInputCol("prediction").setOutputCol("predictedLabel").setLabels(labelIndexer.labelsArray(0))
+    val pipeline = new Pipeline().setStages(Array(labelIndexer, featureIndexer, dt, labelConverter))
+
+    // Train
+    val model = pipeline.fit(trainingData)
+
+    // Test
+    val predictions = model.transform(testData)
+    val evaluator = new MulticlassClassificationEvaluator().setLabelCol("indexedLabel").setPredictionCol("prediction").setMetricName("accuracy")
+    val accuracy = evaluator.evaluate(predictions)
+
+    return Result2(accuracy, job)
+}
 
 def eval_logistic_regression(job: Job2): Result2 = {
 
@@ -105,6 +366,27 @@ def eval(job: Job2): Result2 = {
     else if (job.model_type == TYPE_KMEANS)
         return eval_kmeans(job)
     
+    else if (job.model_type == TYPE_DECISION_TREE)
+        return eval_decision_tree(job)
+    
+    else if (job.model_type == TYPE_RANDOM_FOREST)
+        return eval_random_forest(job)
+        
+    else if (job.model_type == TYPE_GRADIENT_BOOSTED_TREES)
+        return eval_gradient_boosted_trees(job)
+    
+    else if (job.model_type == TYPE_MLP)
+        return eval_mlp(job)
+    
+    else if (job.model_type == TYPE_NAIVE_BAYES)
+        return eval_naive_bayes(job)
+    
+    else if (job.model_type == TYPE_FACTORIZATION_MACHINE)
+        return eval_factorization_machine(job)
+    
+    else if (job.model_type == TYPE_SVC)
+        return eval_svc(job)
+    
     else
         throw new RuntimeException("Invalid model_type: " + job.model_type)
 }
@@ -113,6 +395,128 @@ def eval(job: Job2): Result2 = {
 ///////////////////////////////////////////////////////////////////////////////////////////
 // Add jobs
 ///////////////////////////////////////////////////////////////////////////////////////////
+
+def add_svc(data: DataFrame, repetitions: Int, jobs: ListBuffer[Job2]): Unit = {
+
+    val valRegParam = Array(0, 0.15, 0.30, 0.45, 0.6, 0.75, 0.9) // 7
+
+    for (repetition <- 1 to repetitions) {
+        for (regParam <- valRegParam) {
+            jobs.append(Job2(jobs.size, data, TYPE_SVC, Map(
+                "regParam" -> regParam.toString,
+            )))
+        }
+    }
+}
+
+def add_factorization_machine(data: DataFrame, repetitions: Int, jobs: ListBuffer[Job2]): Unit = {
+    val valFactorSize = Array(2,4,8,16) // 4
+    val valRegParam = Array(0, 0.25, 0.5) // 3
+
+    for (repetition <- 1 to repetitions) {
+        for (factorSize <- valFactorSize) {
+            for (regParam <- valRegParam) {
+                jobs.append(Job2(jobs.size, data, TYPE_FACTORIZATION_MACHINE, Map(
+                    "factorSize" -> factorSize.toString,
+                    "regParam" -> regParam.toString,
+                )))
+            }
+        }
+    }    
+}
+
+def add_naive_bayes(data: DataFrame, repetitions: Int, jobs: ListBuffer[Job2]): Unit = {
+    val valTypes = Array("multinomial", "complement", "bernoulli", "gaussian") // 4
+
+    for (repetition <- 1 to repetitions) {
+        for (types <- valTypes) {
+            jobs.append(Job2(jobs.size, data, TYPE_NAIVE_BAYES, Map(
+                "types" -> types.toString,
+            )))
+        }
+    }    
+}
+
+def add_mlp(data: DataFrame, repetitions: Int, jobs: ListBuffer[Job2]): Unit = {
+
+    val valHiddenNeurons = Array(1,3,7,13,31,51) // 6
+
+    for (repetition <- 1 to repetitions) {
+        for (hiddenNeurons <- valHiddenNeurons) {
+            jobs.append(Job2(jobs.size, data, TYPE_MLP, Map(
+                "hiddenNeurons" -> hiddenNeurons.toString,
+            )))
+        }
+    }
+}
+
+def add_gradient_boosted_trees(data: DataFrame, repetitions: Int, jobs: ListBuffer[Job2]): Unit = {
+
+    val valBins = Array(4, 8, 16, 32) // 4
+    val valDepths = Array(3,5) // 2
+
+    for (repetition <- 1 to repetitions) {
+        for (bins <- valBins) {
+            for (depth <- valDepths) {
+                jobs.append(Job2(jobs.size, data, TYPE_GRADIENT_BOOSTED_TREES, Map(
+                    "bins" -> bins.toString,
+                    "depth" -> depth.toString,
+                )))
+            }
+        }
+    }
+}
+
+def add_random_forest(data: DataFrame, repetitions: Int, jobs: ListBuffer[Job2]): Unit = {
+
+    val valImpurity = Array("gini", "entropy") // 2
+    val valBins = Array(32, 64, 128, 256) // 4
+    val valTrees = Array(10, 20, 40) // 3
+    val valDepths = Array(3, 5, 7) // 3
+
+    for (repetition <- 1 to repetitions) {
+        for (impurity <- valImpurity) {
+            for (bins <- valBins) {
+                for (trees <- valTrees) {
+                    for (depth <- valDepths) {
+                        jobs.append(Job2(jobs.size, data, TYPE_RANDOM_FOREST, Map(
+                            "impurity" -> impurity,
+                            "bins" -> bins.toString,
+                            "trees" -> trees.toString,
+                            "depth" -> depth.toString,
+                            //"categoricalFeatures" -> categoricalFeatures.toString,
+                            // "featureSubsetStrategy" -> featureSubsetStrategy.toString,
+                            // "numClasses" -> numClasses.toString
+                        )))
+                    }
+                }
+            }
+        }
+    }
+}
+
+def add_decision_tree(data: DataFrame, repetitions: Int, jobs: ListBuffer[Job2]): Unit = {
+    
+    val valImpurity = Array("gini", "entropy") // 2
+    val valBins = Array(32, 64, 128, 256) // 4
+    val valDepths = Array(3, 5, 7) // 3
+
+    for (repetition <- 1 to repetitions) {
+        for (impurity <- valImpurity) {
+            for (bins <- valBins) {
+                for (depth <- valDepths) {
+                    jobs.append(Job2(jobs.size, data, TYPE_DECISION_TREE, Map(
+                        "impurity" -> impurity,
+                        "bins" -> bins.toString,
+                        "depth" -> depth.toString,
+                        //"categoricalFeatures" -> categoricalFeatures,
+                        //"numClasses" -> numClasses.toString
+                    )))
+                }
+            }
+        }
+    }
+}
 
 def add_logistic_regression(data: DataFrame, repetitions: Int, jobs: ListBuffer[Job2]): Unit = {
 
@@ -133,7 +537,7 @@ def add_logistic_regression(data: DataFrame, repetitions: Int, jobs: ListBuffer[
 
 def add_kmeans(data: DataFrame, repetitions: Int, jobs: ListBuffer[Job2]): Unit = {
 
-    val valClusters = Array(2, 4, 6, 8) // 4
+    val valClusters = Array(2, 3, 4, 5, 6, 7, 8, 9, 10) // 9
 
     for (repetition <- 1 to repetitions) {
         for (clusters <- valClusters) {
@@ -174,10 +578,31 @@ def main(args: Array[String]): Unit = {
     }
 
     val startedAt = System.currentTimeMillis()
-    val spark = SparkSession.builder.appName("Tunner").getOrCreate()
+    val spark = SparkSession.builder.appName("AutoML").getOrCreate()
     val data = load_dataset(spark, datasetFilepath)
     val jobs = ListBuffer[Job2]()
 
+    if (model == "svc" || model == "all" )
+        add_svc(data, numRepetitions, jobs)
+
+    if (model == "fm" || model == "all" )
+        add_factorization_machine(data, numRepetitions, jobs)
+
+    if (model == "nb" || model == "all" )
+        add_naive_bayes(data, numRepetitions, jobs)
+
+    if (model == "mlp" || model == "all" )
+        add_mlp(data, numRepetitions, jobs)
+
+    if (model == "gbt" || model == "all" )
+        add_gradient_boosted_trees(data, numRepetitions, jobs)
+    
+    if (model == "rf" || model == "all" )
+        add_random_forest(data, numRepetitions, jobs)
+    
+    if (model == "dt" || model == "all" )
+        add_decision_tree(data, numRepetitions, jobs)
+    
     if (model == "lr" || model == "all" )
         add_logistic_regression(data, numRepetitions, jobs)
     
@@ -209,7 +634,7 @@ def main(args: Array[String]): Unit = {
     results.foreach(println)
 
     println("Ellapsed time:" + ellapsed)
-    println("Bye!")
+    println("Done!")
     spark.stop()
     System.exit(0)    
 }

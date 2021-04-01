@@ -44,7 +44,7 @@ deploy_certificate_to_node()
 
 deploy_certificate_to_host()
 {
-  echo "Deploying in to host"
+  echo "Deploying to host"
 
   # Register Docker
   sudo mkdir -p /etc/docker/certs.d/$HOST_IP:27443

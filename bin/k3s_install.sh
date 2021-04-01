@@ -6,7 +6,13 @@ then
   exit 0
 fi
 
-NODES=`ifconfig | grep tap | sed 's/tap\([0-9]\+\).\+/node\1/'`
+NODES_FILEPATH=$1
+if [ "$NODES_FILEPATH" = "" ]
+then
+  NODES=`ifconfig | grep tap | sed 's/tap\([0-9]\+\).\+/node\1/'`
+else
+  NODES=`cat $NODES_FILEPATH`
+fi
 
 if [ -e '/etc/systemd/system/k3s.service' ]
 then

@@ -6,16 +6,33 @@ then
   exit 0
 fi
 
-NODES=`ifconfig | grep tap | sed 's/tap\([0-9]\+\).\+/node\1/'`
+NODES_FILEPATH=$1
+if [ "$NODES_FILEPATH" = "" ]
+then	
+  NODES=`ifconfig | grep tap | sed 's/tap\([0-9]\+\).\+/node\1/'`
+else
+  NODES=`cat $NODES_FILEPATH`
+fi
+
+uninstall_node()
+{
+  node=$1
+  echo "Removing slave $node"
+  ssh $node sudo k3s-agent-uninstall.sh 
+}
+
+uninstall_host()
+{
+  echo "Removing master"
+  sudo k3s-uninstall.sh
+}
 
 for node in $NODES
 do
-  echo "Removing slave $node"
-  ssh $node sudo k3s-agent-uninstall.sh &
+  uninstall_node $node &
 done
 
-echo "Removing master"
-sudo k3s-uninstall.sh &
+uninstall_host &
 
 wait
 echo "Done!"

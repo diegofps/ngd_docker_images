@@ -13,6 +13,14 @@ STARTED_LOCK="/hadoop/started.lock"
 if [ "$MODE" = "primary" ]; then
     echo "Starting as primary node"
 
+    # Configure hibench, if available
+    if [ -e "/hibench" -a "$(cat /hibench/conf/spark.conf | grep park.driver.host)" = '' ]
+    then
+        echo "Setting spark.driver.host in /hibench/conf/spark.conf"
+        cat /hibench/conf/spark.conf | sed "s/# Spark home/# Host address\nspark.driver.host       $(hostname -I)\n\n# Spark home/" > ./tmp
+        mv ./tmp /hibench/conf/spark.conf
+    fi
+
 
     # Init Hadoop
     if [ -e "$STARTED_LOCK" ]; then
@@ -36,6 +44,10 @@ if [ "$MODE" = "primary" ]; then
     /spark/sbin/start-master.sh -h 0.0.0.0
 
 
+    # Follow hadoop logs
+    echo "Following hadoop namenode log"
+    tail -f /hadoop/logs/hadoop-root-namenode-*.log
+
 elif [ "$MODE" = "secondary" ]; then
     echo "Starting as secondary node"
 
@@ -45,9 +57,13 @@ elif [ "$MODE" = "secondary" ]; then
 
 
     # Init spark
-    cp /spark/conf/spark-env.sh.template /spark/conf/spark-env.sh
-    echo "export SPARK_WORKER_CORES=$(nproc)" >> /spark/conf/spark-env.sh
+    cat /spark/conf/spark-env.sh | sed "s:# - SPARK_WORKER_CORES, :SPARK_WORKER_CORES=$(nproc) # :" > ./tmp && mv ./tmp /spark/conf/spark-env.sh
     /spark/sbin/start-slave.sh spark://bigdata2-primary:7077
+
+
+    # Follow hadoop logs
+    echo "Following hadoop datanode log"
+    tail -f /hadoop/logs/hadoop-root-datanode-*.log
 
 elif [ "$MODE" = "client" ]; then
     echo "Starting as client"
@@ -55,34 +71,3 @@ elif [ "$MODE" = "client" ]; then
     exit 0
 
 fi
-
-
-echo "Started"
-
-if [ "$LOG_MODE" = "hadoop_primary" ]; then
-    echo "Following hadoop namenode log"
-    tail -f /hadoop/logs/hadoop-root-namenode-*.log
-
-
-elif [ "$LOG_MODE" = "hadoop_secondary" ]; then
-    echo "Following hadoop datanode log"
-    tail -f /hadoop/logs/hadoop-root-datanode-*.log
-
-
-elif [ "$LOG_MODE" = "spark_primary" ]; then
-    echo "Following spark master log"
-    tail -f /spark/logs/spark-ngd-org.apache.spark.deploy.master.*.out
-
-
-elif [ "$LOG_MODE" = "spark_secondary" ]; then
-    echo "Following hadoop worker log"
-    tail -f /spark/logs/spark-ngd-org.apache.spark.deploy.worker.*.out
-
-
-else
-    echo "Following default, /var/log/faillog"
-    echo "Starting tail for /var/log/faillog"
-
-fi
-
-# Monitor Hadoop log
