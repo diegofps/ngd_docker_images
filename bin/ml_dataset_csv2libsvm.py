@@ -25,7 +25,7 @@ with open(csv_filepath, "r") as fin:
             cluster = cells[1]
             features = cells[2:]
             
-            line = str(clazz) + " " + " ".join([str(i) + ":" + str(x) for i,x in enumerate(features)]) + "\n"
+            line = str(clazz) + " " + " ".join([str(i+1) + ":" + str(x) for i,x in enumerate(features)]) + "\n"
             
             fout.write(line)
 

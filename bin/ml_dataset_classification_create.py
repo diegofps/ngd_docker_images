@@ -31,7 +31,7 @@ with open(output, "w") as fout:
     for k in range(classes):
         
         offsets = np.random.rand(clusters, dims) * 2 * math.pi
-        frequencies = np.random.rand(clusters, dims) * 10
+        frequencies = np.random.rand(clusters, dims) * 1.0
         y_data[0] = k
         
         for c in range(clusters):
