@@ -40,11 +40,11 @@ with open(output, "w") as fout:
             frequency = frequencies[c,:]
             
             x_data = np.random.normal(0, 1, (samples_in_cluster, dims)) * 2 * math.pi
-            noise_data = np.random.normal(samples_in_cluster, dims) * noise
+            noise_data = np.random.normal(0, noise, (samples_in_cluster, dims))
             y_data[1] = c
 
             for s in range(samples_in_cluster):
-                y_data[2:] = np.sin( offset + x_data[s,:] * frequency )
+                y_data[2:] = np.abs(np.sin( offset + x_data[s,:] * frequency ) + noise_data[s,:])
                 writer.writerow([str(x) for x in y_data])
             
 
