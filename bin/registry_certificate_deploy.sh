@@ -77,6 +77,12 @@ deploy_certificate_to_buildx_builder()
 {
   echo "Deploying to buildx builder"
 
+  if [ "$(docker ps | grep buildx_buildkit_mybuilder0)" = "" ]
+  then
+    echo "Buildx container not found, skipping buildx builder deploy"
+    return
+  fi
+
   # Get the certificates inside the container and check if our certificate is inside it
   docker cp buildx_buildkit_mybuilder0:/etc/ssl/certs/ca-certificates.crt .
   HAS_CRT=`python3 -c "x=open('/home/$USER/.certs/registry.crt').read(); y=open('./ca-certificates.crt').read(); print(x in y)"`
