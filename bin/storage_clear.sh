@@ -12,13 +12,22 @@ clear_host()
 {
   echo "Clearing data in host ..."
   sudo rm -rf /media/storage/*
+  echo "host cleared."
 }
 
 clear_node()
 {
   node=$1
   echo "Clearing data in $node ..."
-  ssh $node sudo rm -rf /media/storage/*
+
+  ssh -o ConnectTimeout=5 $node sudo rm -rf /media/storage/*
+
+  if [ $? -eq 0 ]
+  then
+    echo "$node cleared."
+  else
+    echo "Failed to clear $node"
+  fi
 }
 
 clear_host &
