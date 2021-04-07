@@ -1,25 +1,59 @@
 #!/bin/sh
-  
-echo "\nRunning bayes"
-/hibench/bin/workloads/ml/bayes/spark/run.sh
 
-echo "\nRunning rf"
-/hibench/bin/workloads/ml/rf/spark/run.sh
+if [ "$1" = "" ]
+then
+  OUTPUT="./hibench_results.csv"
+else
+  OUTPUT=$1
+fi
 
-echo "\nRunning xgboost"
-/hibench/bin/workloads/ml/xgboost/spark/run.sh
 
-echo "\nRunning linear regression"
-/hibench/bin/workloads/ml/linear/spark/run.sh
+run_benchmark()
+{
+    IDD=$1
+    NAME=$2
+    SIZE=$3
+    N=$4
 
-echo "\nRunning logistic regression"
-/hibench/bin/workloads/ml/lr/spark/run.sh
+    cat /hibench/conf/hibench.conf | sed "s/\(hibench.scale.profile\s\+\)[a-z]\+/\1$SIZE/" > ./tmp && mv ./tmp /hibench/conf/hibench.conf
+    /hibench/bin/workloads/ml/$IDD/prepare/prepare.sh
 
-echo "\nRunning SVM"
-/hibench/bin/workloads/ml/svm/spark/run.sh
+    SUM=0
 
-echo "\nRunning kmeans"
-/hibench/bin/workloads/ml/kmeans/spark/run.sh
+    for i in `seq $N`
+    do
+        START=`date +%s`
 
-echo "\nDone!"
+        /hibench/bin/workloads/ml/$IDD/spark/run.sh
 
+        END=`date +%s`
+        ELLAPSED=$(( $END - $START ))
+        SUM=$(( $SUM + $ELLAPSED ))
+
+        echo "=== Iteration $i / $N took $ELLAPSED seconds ==="
+    done
+
+    AVG=$(( $SUM / $N ))
+    echo "Average time for (IDD=$IDD, NAME=$NAME, SIZE=$SIZE, N=$N) was $AVG seconds"
+    echo "$IDD,$NAME,$SIZE,$AVG" >> "$OUTPUT"
+
+    hadoop fs -rm -r -f /HiBench/$NAME
+}
+
+
+rm -f $OUTPUT
+
+N=10
+run_benchmark bayes Bayes gigantic $N
+run_benchmark kmeans Kmeans large $N
+run_benchmark gmm GMM large $N
+run_benchmark lr LR small $N
+run_benchmark als ALS bigdata $N
+run_benchmark gbt GBT gigantic $N
+#run_benchmark xgboost XGBoost huge $N
+run_benchmark linear Linear small $N
+run_benchmark lda LDA small $N
+run_benchmark pca PCA large $N
+run_benchmark rf RF large $N
+run_benchmark svm SVM small $N
+run_benchmark svd SVD large $N

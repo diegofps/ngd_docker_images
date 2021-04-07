@@ -25,6 +25,6 @@ cat /spark/conf/spark-env.sh.template | \
 #sed 's|# - HADOOP_CONF_DIR, |HADOOP_CONF_DIR=/hadoop/etc/hadoop # |'
 
 cat /spark/conf/spark-defaults.conf.template > /spark/conf/spark-defaults.conf && \
-    echo "spark.shuffle.service.enabled true" >> /spark/conf/spark-defaults.conf && \
-    echo "spark.dynamicAllocation.enabled true" >> /spark/conf/spark-defaults.conf && \
-    echo "spark.dynamicAllocation.shuffleTracking.enabled true" >> /spark/conf/spark-defaults.conf
+    echo "spark.shuffle.service.enabled false" >> /spark/conf/spark-defaults.conf && \
+    echo "spark.dynamicAllocation.enabled false" >> /spark/conf/spark-defaults.conf && \
+    echo "spark.dynamicAllocation.shuffleTracking.enabled false" >> /spark/conf/spark-defaults.conf

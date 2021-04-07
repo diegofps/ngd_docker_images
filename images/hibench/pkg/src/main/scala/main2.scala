@@ -582,6 +582,8 @@ def main(args: Array[String]): Unit = {
     val data = load_dataset(spark, datasetFilepath)
     val jobs = ListBuffer[Job2]()
 
+    // Add classification models
+
     if (model == "svc" || model == "all" )
         add_svc(data, numRepetitions, jobs)
 
@@ -606,9 +608,17 @@ def main(args: Array[String]): Unit = {
     if (model == "lr" || model == "all" )
         add_logistic_regression(data, numRepetitions, jobs)
     
+    // Add regression models
+
+    
+
+    // Add clustering models
+
     if (model == "kmeans" || model == "all" )
         add_kmeans(data, numRepetitions, jobs)
     
+
+
     println("Model:" + model)
     println("Threads:" + numThreads)
     println("Jobs:" + jobs.size.toString)
