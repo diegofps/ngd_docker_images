@@ -28,7 +28,7 @@ run_benchmark()
     for i in `seq $N`
     do
         START=`date +%s`
-        /usr/bin/time spark-submit --class br.com.wespa.ngd.spark.automl.Tunner2 \
+        /usr/bin/time -v spark-submit --class br.com.wespa.ngd.spark.automl.Tunner2 \
             --master spark://bigdata2-primary:7077 \
             --deploy-mode client \
             --conf spark.yarn.submit.waitAppCompletion=true \

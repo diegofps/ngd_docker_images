@@ -11,14 +11,14 @@ fi
 
 run_benchmark()
 {
-    N=$4
+    N=$1
     
     SUM=0
     
     for i in `seq $N`
     do
         START=`date +%s`
-        /usr/bin/time spark-submit --class org.apache.spark.examples.SparkPi \
+        /usr/bin/time -v spark-submit --class org.apache.spark.examples.SparkPi \
             --master spark://bigdata2-primary:7077 \
             --deploy-mode client \
             --conf spark.yarn.submit.waitAppCompletion=true \

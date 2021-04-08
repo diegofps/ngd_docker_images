@@ -24,7 +24,7 @@ run_benchmark()
     do
         START=`date +%s`
 
-        /hibench/bin/workloads/ml/$IDD/spark/run.sh
+        /usr/bin/time -v /hibench/bin/workloads/ml/$IDD/spark/run.sh
 
         END=`date +%s`
         ELLAPSED=$(( $END - $START ))
