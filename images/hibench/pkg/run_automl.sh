@@ -7,6 +7,12 @@ else
   OUTPUT=$1
 fi
 
+if [ "$2" = "" ]
+then
+  GROUP="all"
+else
+  GROUP=$2
+fi
 
 run_benchmark()
 {
@@ -57,15 +63,31 @@ rm -f $OUTPUT
 N=4
 R=5
 T=8
-DS="hdfs://bigdata2-primary:9000/classification_dataset.libsvm"
 
-run_benchmark kmeans 10 $T $N $DS
-run_benchmark lr 20 $T $N $DS
-run_benchmark dt 10 $T $N $DS
-run_benchmark rf 4 $T $N $DS
-run_benchmark gbt 5 $T $N $DS
-run_benchmark mlp 5 $T $N $DS 1g
-run_benchmark nb 30 $T $N $DS
-run_benchmark fm 5 $T $N $DS 1g
-run_benchmark svc 5 $T $N $DS
+
+if [ "$GROUP" = "clustering" -o "$GROUP" = "all" ]; then
+  DS="hdfs://bigdata2-primary:9000/classification_dataset.libsvm"
+  run_benchmark kmeans 10 $T $N $DS
+fi
+
+
+if [ "$GROUP" = "classification" -o "$GROUP" = "all" ]; then
+  DS="hdfs://bigdata2-primary:9000/classification_dataset.libsvm"
+  run_benchmark lrc 20 $T $N $DS
+  run_benchmark dtc 10 $T $N $DS
+  run_benchmark rfc 4 $T $N $DS
+  run_benchmark gbtc 5 $T $N $DS
+  run_benchmark mlpc 5 $T $N $DS 1g
+  run_benchmark nbc 30 $T $N $DS
+  run_benchmark fmc 5 $T $N $DS 1g
+  run_benchmark svc 5 $T $N $DS
+fi
+
+
+if [ "$GROUP" = "regression" -o "$GROUP" = "all" ]; then
+  DS="hdfs://bigdata2-primary:9000/regression_dataset.libsvm"
+  run_benchmark nbc 30 $T $N $DS
+  run_benchmark fmc 5 $T $N $DS 1g
+  run_benchmark svc 5 $T $N $DS
+fi
 

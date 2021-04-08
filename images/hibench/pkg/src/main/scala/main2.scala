@@ -1,5 +1,6 @@
 package br.com.wespa.ngd.spark.automl
 
+// Spark utils
 import scala.collection.mutable.ListBuffer
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.DataFrame
@@ -52,6 +53,34 @@ import org.apache.spark.ml.feature.{IndexToString, MinMaxScaler, StringIndexer}
 // Linear SVC
 import org.apache.spark.ml.classification.LinearSVC
 
+// Linerar Regression
+import org.apache.spark.ml.regression.LinearRegression
+
+// Decision Tree Regression
+import org.apache.spark.ml.Pipeline
+import org.apache.spark.ml.evaluation.RegressionEvaluator
+import org.apache.spark.ml.feature.VectorIndexer
+import org.apache.spark.ml.regression.DecisionTreeRegressionModel
+import org.apache.spark.ml.regression.DecisionTreeRegressor
+
+// Random Forest regressaion
+import org.apache.spark.ml.Pipeline
+import org.apache.spark.ml.evaluation.RegressionEvaluator
+import org.apache.spark.ml.feature.VectorIndexer
+import org.apache.spark.ml.regression.{RandomForestRegressionModel, RandomForestRegressor}
+
+// Gradient Boosted Trees
+import org.apache.spark.ml.Pipeline
+import org.apache.spark.ml.evaluation.RegressionEvaluator
+import org.apache.spark.ml.feature.VectorIndexer
+import org.apache.spark.ml.regression.{GBTRegressionModel, GBTRegressor}
+
+// Factorization Machine Regression
+import org.apache.spark.ml.Pipeline
+import org.apache.spark.ml.evaluation.RegressionEvaluator
+import org.apache.spark.ml.feature.MinMaxScaler
+import org.apache.spark.ml.regression.{FMRegressionModel, FMRegressor}
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 // Extra types and utils
@@ -62,19 +91,33 @@ case class Result2(acc: Double, job: Job2)
 
 object Tunner2 {
 
-val DATASET_CLASSIFIERS = "/spark/data/mllib/sample_libsvm_data.txt"
-//val DATASET_KMEANS = "/spark/data/mllib/sample_kmeans_data.txt"
-val DATASET_KMEANS = "hdfs://bigdata2-primary:9000/sample_kmeans_data.txt"
+// Default test datasets
+val DATASET_CLASSIFICATION = "hdfs://bigdata2-primary:9000/classification_dataset.libsvm"
+val DATASET_CLUSTERING = "hdfs://bigdata2-primary:9000/clustering_dataset.libsvm"
+val DATASET_REGRESSION = "hdfs://bigdata2-primary:9000/regression_dataset.libsvm"
 
-val TYPE_GRADIENT_BOOSTED_TREES = "gradient_boosted_trees"
-val TYPE_FACTORIZATION_MACHINE = "factorization_machine"
-val TYPE_LOGISTIC_REGRESSION = "logistic_regression"
-val TYPE_RANDOM_FOREST = "random_forest"
-val TYPE_DECISION_TREE = "decision_tree"
-val TYPE_NAIVE_BAYES = "naive_bayes"
-val TYPE_KMEANS = "kmeans"
-val TYPE_SVC = "svc"
-val TYPE_MLP = "mlp"
+
+// Regression types
+val TYPE_GRADIENT_BOOSTED_TREES_REGRESSION = "gradient_boosted_trees_regression"
+val TYPE_FACTORIZATION_MACHINE_REGRESSION = "factorization_machine_regression"
+val TYPE_DECISION_TREE_REGRESSION = "decision_tree_regression"
+val TYPE_RANDOM_FOREST_REGRESSION = "random_forest_regression"
+val TYPE_LINEAR_REGRESSION = "linear_regression"
+
+
+// Classification types
+val TYPE_GRADIENT_BOOSTED_TREES_CLASSIFIER = "gradient_boosted_trees_classifier"
+val TYPE_FACTORIZATION_MACHINE_CLASSIFIER = "factorization_machine_classifier"
+val TYPE_LOGISTIC_REGRESSION_CLASSIFIER = "logistic_regression_classifier"
+val TYPE_SUPPORT_VECTOR_CLASSIFIER = "support_vector_classifier"
+val TYPE_RANDOM_FOREST_CLASSIFIER = "random_forest_classifier"
+val TYPE_DECISION_TREE_CLASSIFIER = "decision_tree_classifier"
+val TYPE_NAIVE_BAYES_CLASSIFIER = "naive_bayes_classifier"
+val TYPE_MLP_CLASSIFIER = "mlp_classifier"
+
+
+// Clustering types
+val TYPE_KMEANS_CLUSTERING = "kmeans_clustering"
 
 
 def encode_categories(idds: Map[Int, Int]): String = {
@@ -97,11 +140,68 @@ def load_dataset(spark: SparkSession, filepath: String): DataFrame = {
     return data
 }
 
+def eval(job: Job2): Result2 = {
+
+
+    // Classification
+    if (job.model_type == TYPE_LOGISTIC_REGRESSION_CLASSIFIER)
+        return eval_logistic_regression_classifier(job)
+        
+    else if (job.model_type == TYPE_DECISION_TREE_CLASSIFIER)
+        return eval_decision_tree_classifier(job)
+    
+    else if (job.model_type == TYPE_RANDOM_FOREST_CLASSIFIER)
+        return eval_random_forest_classifier(job)
+        
+    else if (job.model_type == TYPE_GRADIENT_BOOSTED_TREES_CLASSIFIER)
+        return eval_gradient_boosted_trees_classifier(job)
+    
+    else if (job.model_type == TYPE_MLP_CLASSIFIER)
+        return eval_mlp_classifier(job)
+    
+    else if (job.model_type == TYPE_NAIVE_BAYES_CLASSIFIER)
+        return eval_naive_bayes_classifier(job)
+    
+    else if (job.model_type == TYPE_FACTORIZATION_MACHINE_CLASSIFIER)
+        return eval_factorization_machine_classifier(job)
+    
+    else if (job.model_type == TYPE_SUPPORT_VECTOR_CLASSIFIER)
+        return eval_support_vector_classifier(job)
+    
+
+    // Regression
+    else if (job.model_type == TYPE_LINEAR_REGRESSION)
+        return eval_linear_regression(job)
+    
+    else if (job.model_type == TYPE_DECISION_TREE_REGRESSION)
+        return eval_decision_tree_regression(job)
+    
+    else if (job.model_type == TYPE_RANDOM_FOREST_REGRESSION)
+        return eval_random_forest_regression(job)
+    
+    else if (job.model_type == TYPE_GRADIENT_BOOSTED_TREES_REGRESSION)
+        return eval_gradient_boosted_trees_regression(job)
+    
+    else if (job.model_type == TYPE_FACTORIZATION_MACHINE_REGRESSION)
+        return eval_factorization_machine_regression(job)
+    
+
+    // Clustering
+    else if (job.model_type == TYPE_KMEANS_CLUSTERING)
+        return eval_kmeans_clustering(job)
+    
+
+    // Error
+    else
+        throw new RuntimeException("Invalid model_type: " + job.model_type)
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////////////////
-// Eval jobs
+// Eval Classifiers
 ///////////////////////////////////////////////////////////////////////////////////////////
 
-def eval_svc(job: Job2): Result2 = {
+def eval_support_vector_classifier(job: Job2): Result2 = {
     
     val p = job.model_params
     val regParam = p("regParam").toDouble
@@ -127,7 +227,7 @@ def eval_svc(job: Job2): Result2 = {
     return Result2(accuracy, job)
 }
 
-def eval_factorization_machine(job: Job2): Result2 = {
+def eval_factorization_machine_classifier(job: Job2): Result2 = {
     val Array(trainingData, testData) = job.data.randomSplit(Array(0.7, 0.3))
 
     val p = job.model_params
@@ -176,7 +276,7 @@ def eval_factorization_machine(job: Job2): Result2 = {
     return Result2(accuracy, job)
 }
 
-def eval_naive_bayes(job: Job2): Result2 = {
+def eval_naive_bayes_classifier(job: Job2): Result2 = {
     val Array(trainingData, testData) = job.data.randomSplit(Array(0.7, 0.3))
 
     // Create and train the model
@@ -195,7 +295,7 @@ def eval_naive_bayes(job: Job2): Result2 = {
     return Result2(accuracy, job)
 }
 
-def eval_mlp(job: Job2): Result2 = {
+def eval_mlp_classifier(job: Job2): Result2 = {
     val p = job.model_params
     
     val hiddenNeurons = p("hiddenNeurons").toInt
@@ -225,7 +325,7 @@ def eval_mlp(job: Job2): Result2 = {
     return Result2(accuracy, job)
 }
 
-def eval_gradient_boosted_trees(job: Job2): Result2 = {
+def eval_gradient_boosted_trees_classifier(job: Job2): Result2 = {
     val p = job.model_params
     
     val maxDepth = p("depth").toInt
@@ -256,7 +356,7 @@ def eval_gradient_boosted_trees(job: Job2): Result2 = {
     return Result2(accuracy, job)
 }
 
-def eval_random_forest(job: Job2): Result2 = {
+def eval_random_forest_classifier(job: Job2): Result2 = {
     val p = job.model_params
     
     val numTrees = p("trees").toInt
@@ -290,7 +390,7 @@ def eval_random_forest(job: Job2): Result2 = {
     return Result2(accuracy, job)
 }
 
-def eval_decision_tree(job: Job2): Result2 = {
+def eval_decision_tree_classifier(job: Job2): Result2 = {
     val p = job.model_params
     
     //val categoricalFeaturesInfo = decode_categories(p("categoricalFeatures"))
@@ -324,7 +424,7 @@ def eval_decision_tree(job: Job2): Result2 = {
     return Result2(accuracy, job)
 }
 
-def eval_logistic_regression(job: Job2): Result2 = {
+def eval_logistic_regression_classifier(job: Job2): Result2 = {
 
     val p = job.model_params
     val reg = p("reg").toDouble
@@ -339,7 +439,152 @@ def eval_logistic_regression(job: Job2): Result2 = {
     return Result2(auroc, job)
 }
 
-def eval_kmeans(job: Job2): Result2 = {
+
+///////////////////////////////////////////////////////////////////////////////////////////
+// Eval Regressions
+///////////////////////////////////////////////////////////////////////////////////////////
+
+def eval_linear_regression(job: Job2): Result2 = {
+
+    val p = job.model_params
+    val reg = p("reg").toDouble
+    val elasticNet = p("elasticNet").toDouble
+
+    var start = System.currentTimeMillis
+    val model = new LinearRegression().setMaxIter(1000).setRegParam(reg).setElasticNetParam(elasticNet).fit(job.data)
+    val trainingTime = (System.currentTimeMillis - start) / 1000.00
+
+    val rmse = model.summary.rootMeanSquaredError
+
+    return Result2(rmse, job)
+}
+
+def eval_decision_tree_regression(job: Job2): Result2 = {
+    val p = job.model_params
+    
+    val impurity = p("impurity")
+    val maxDepth = p("depth").toInt
+    val maxBins = p("bins").toInt
+
+    val featureIndexer = new VectorIndexer().setInputCol("features").setOutputCol("indexedFeatures").setMaxCategories(4).fit(job.data)
+    val Array(trainingData, testData) = job.data.randomSplit(Array(0.7, 0.3))
+
+    val dt = new DecisionTreeClassifier()
+        .setLabelCol("label")
+        .setFeaturesCol("indexedFeatures")
+        .setImpurity(impurity)
+        .setMaxDepth(maxDepth)
+        .setMaxBins(maxBins)
+
+    val pipeline = new Pipeline().setStages(Array(featureIndexer, dt))
+
+    // Train
+    val model = pipeline.fit(trainingData)
+
+    // Test
+    val predictions = model.transform(testData)
+    val evaluator = new RegressionEvaluator().setLabelCol("label").setPredictionCol("prediction").setMetricName("rmse")
+    val rmse = evaluator.evaluate(predictions)
+
+    return Result2(rmse, job)
+}
+
+def eval_random_forest_regression(job: Job2): Result2 = {
+    val p = job.model_params
+    
+    val numTrees = p("trees").toInt
+    val impurity = p("impurity")
+    val maxDepth = p("depth").toInt
+    val maxBins = p("bins").toInt
+
+    val featureIndexer = new VectorIndexer().setInputCol("features").setOutputCol("indexedFeatures").setMaxCategories(4).fit(job.data)
+    val Array(trainingData, testData) = job.data.randomSplit(Array(0.7, 0.3))
+
+    val rf = new RandomForestClassifier()
+        .setLabelCol("label")
+        .setFeaturesCol("indexedFeatures")
+        .setImpurity(impurity)
+        .setMaxDepth(maxDepth)
+        .setMaxBins(maxBins)
+        .setNumTrees(numTrees)
+
+    val pipeline = new Pipeline().setStages(Array(featureIndexer, rf))
+
+    // Train
+    val model = pipeline.fit(trainingData)
+
+    // Test
+    val predictions = model.transform(testData)
+    val evaluator = new RegressionEvaluator().setLabelCol("label").setPredictionCol("prediction").setMetricName("rmse")
+    val rmse = evaluator.evaluate(predictions)
+
+    return Result2(rmse, job)
+}
+
+def eval_gradient_boosted_trees_regression(job: Job2): Result2 = {
+    val p = job.model_params
+    
+    val maxDepth = p("depth").toInt
+    val maxBins = p("bins").toInt
+
+    val featureIndexer = new VectorIndexer().setInputCol("features").setOutputCol("indexedFeatures").setMaxCategories(4).fit(job.data)
+    val Array(trainingData, testData) = job.data.randomSplit(Array(0.7, 0.3))
+
+    val rf = new GBTClassifier()
+        .setLabelCol("label")
+        .setFeaturesCol("indexedFeatures")
+        .setMaxIter(100)
+        .setMaxDepth(maxDepth)
+        .setMaxBins(maxBins)
+
+    val pipeline = new Pipeline().setStages(Array(featureIndexer, rf))
+
+    // Train
+    val model = pipeline.fit(trainingData)
+
+    // Test
+    val predictions = model.transform(testData)
+    val evaluator = new RegressionEvaluator().setLabelCol("label").setPredictionCol("prediction").setMetricName("rmse")
+    val rmse = evaluator.evaluate(predictions)
+    
+    return Result2(rmse, job)
+}
+
+def eval_factorization_machine_regression(job: Job2): Result2 = {
+    val Array(trainingData, testData) = job.data.randomSplit(Array(0.7, 0.3))
+
+    val p = job.model_params
+    val factorSize = p("factorSize").toInt
+    val regParam = p("regParam").toDouble
+
+    val featureScaler = new MinMaxScaler().setInputCol("features").setOutputCol("scaledFeatures").fit(job.data)
+
+    val fm = new FMClassifier()
+        .setLabelCol("indexedLabel")
+        .setFeaturesCol("scaledFeatures")
+        .setFactorSize(factorSize)
+        .setRegParam(regParam)
+        .setStepSize(0.001)
+
+    val pipeline = new Pipeline().setStages(Array(featureScaler, fm))
+
+    // Train model.
+    val model = pipeline.fit(trainingData)
+
+    // Make predictions.
+    val predictions = model.transform(testData)
+    val evaluator = new RegressionEvaluator().setLabelCol("label").setPredictionCol("prediction").setMetricName("rmse")
+    val rmse = evaluator.evaluate(predictions)
+
+    return Result2(rmse, job)
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////////////
+// Eval Clustering
+///////////////////////////////////////////////////////////////////////////////////////////
+
+def eval_kmeans_clustering(job: Job2): Result2 = {
 
     // Create and train the model
     val p = job.model_params
@@ -358,65 +603,31 @@ def eval_kmeans(job: Job2): Result2 = {
 }
 
 
-def eval(job: Job2): Result2 = {
-
-    if (job.model_type == TYPE_LOGISTIC_REGRESSION)
-        return eval_logistic_regression(job)
-        
-    else if (job.model_type == TYPE_KMEANS)
-        return eval_kmeans(job)
-    
-    else if (job.model_type == TYPE_DECISION_TREE)
-        return eval_decision_tree(job)
-    
-    else if (job.model_type == TYPE_RANDOM_FOREST)
-        return eval_random_forest(job)
-        
-    else if (job.model_type == TYPE_GRADIENT_BOOSTED_TREES)
-        return eval_gradient_boosted_trees(job)
-    
-    else if (job.model_type == TYPE_MLP)
-        return eval_mlp(job)
-    
-    else if (job.model_type == TYPE_NAIVE_BAYES)
-        return eval_naive_bayes(job)
-    
-    else if (job.model_type == TYPE_FACTORIZATION_MACHINE)
-        return eval_factorization_machine(job)
-    
-    else if (job.model_type == TYPE_SVC)
-        return eval_svc(job)
-    
-    else
-        throw new RuntimeException("Invalid model_type: " + job.model_type)
-}
-
-
 ///////////////////////////////////////////////////////////////////////////////////////////
-// Add jobs
+// Add Classification Jobs
 ///////////////////////////////////////////////////////////////////////////////////////////
 
-def add_svc(data: DataFrame, repetitions: Int, jobs: ListBuffer[Job2]): Unit = {
+def add_support_vector_classifier(data: DataFrame, repetitions: Int, jobs: ListBuffer[Job2]): Unit = {
 
     val valRegParam = Array(0, 0.15, 0.30, 0.45, 0.6, 0.75, 0.9) // 7
 
     for (repetition <- 1 to repetitions) {
         for (regParam <- valRegParam) {
-            jobs.append(Job2(jobs.size, data, TYPE_SVC, Map(
+            jobs.append(Job2(jobs.size, data, TYPE_SUPPORT_VECTOR_CLASSIFIER, Map(
                 "regParam" -> regParam.toString,
             )))
         }
     }
 }
 
-def add_factorization_machine(data: DataFrame, repetitions: Int, jobs: ListBuffer[Job2]): Unit = {
+def add_factorization_machine_classifier(data: DataFrame, repetitions: Int, jobs: ListBuffer[Job2]): Unit = {
     val valFactorSize = Array(2,4,8,16) // 4
     val valRegParam = Array(0, 0.25, 0.5) // 3
 
     for (repetition <- 1 to repetitions) {
         for (factorSize <- valFactorSize) {
             for (regParam <- valRegParam) {
-                jobs.append(Job2(jobs.size, data, TYPE_FACTORIZATION_MACHINE, Map(
+                jobs.append(Job2(jobs.size, data, TYPE_FACTORIZATION_MACHINE_CLASSIFIER, Map(
                     "factorSize" -> factorSize.toString,
                     "regParam" -> regParam.toString,
                 )))
@@ -425,40 +636,40 @@ def add_factorization_machine(data: DataFrame, repetitions: Int, jobs: ListBuffe
     }    
 }
 
-def add_naive_bayes(data: DataFrame, repetitions: Int, jobs: ListBuffer[Job2]): Unit = {
+def add_naive_bayes_classifier(data: DataFrame, repetitions: Int, jobs: ListBuffer[Job2]): Unit = {
     val valTypes = Array("multinomial", "complement", "bernoulli", "gaussian") // 4
 
     for (repetition <- 1 to repetitions) {
         for (types <- valTypes) {
-            jobs.append(Job2(jobs.size, data, TYPE_NAIVE_BAYES, Map(
+            jobs.append(Job2(jobs.size, data, TYPE_NAIVE_BAYES_CLASSIFIER, Map(
                 "types" -> types.toString,
             )))
         }
     }    
 }
 
-def add_mlp(data: DataFrame, repetitions: Int, jobs: ListBuffer[Job2]): Unit = {
+def add_mlp_classifier(data: DataFrame, repetitions: Int, jobs: ListBuffer[Job2]): Unit = {
 
     val valHiddenNeurons = Array(1,3,7,13,31,51) // 6
 
     for (repetition <- 1 to repetitions) {
         for (hiddenNeurons <- valHiddenNeurons) {
-            jobs.append(Job2(jobs.size, data, TYPE_MLP, Map(
+            jobs.append(Job2(jobs.size, data, TYPE_MLP_CLASSIFIER, Map(
                 "hiddenNeurons" -> hiddenNeurons.toString,
             )))
         }
     }
 }
 
-def add_gradient_boosted_trees(data: DataFrame, repetitions: Int, jobs: ListBuffer[Job2]): Unit = {
+def add_gradient_boosted_trees_classifier(data: DataFrame, repetitions: Int, jobs: ListBuffer[Job2]): Unit = {
 
     val valBins = Array(4, 8, 16, 32) // 4
-    val valDepths = Array(3,5) // 2
+    val valDepths = Array(3, 5) // 2
 
     for (repetition <- 1 to repetitions) {
         for (bins <- valBins) {
             for (depth <- valDepths) {
-                jobs.append(Job2(jobs.size, data, TYPE_GRADIENT_BOOSTED_TREES, Map(
+                jobs.append(Job2(jobs.size, data, TYPE_GRADIENT_BOOSTED_TREES_CLASSIFIER, Map(
                     "bins" -> bins.toString,
                     "depth" -> depth.toString,
                 )))
@@ -467,7 +678,7 @@ def add_gradient_boosted_trees(data: DataFrame, repetitions: Int, jobs: ListBuff
     }
 }
 
-def add_random_forest(data: DataFrame, repetitions: Int, jobs: ListBuffer[Job2]): Unit = {
+def add_random_forest_classifier(data: DataFrame, repetitions: Int, jobs: ListBuffer[Job2]): Unit = {
 
     val valImpurity = Array("gini", "entropy") // 2
     val valBins = Array(32, 64, 128, 256) // 4
@@ -479,7 +690,7 @@ def add_random_forest(data: DataFrame, repetitions: Int, jobs: ListBuffer[Job2])
             for (bins <- valBins) {
                 for (trees <- valTrees) {
                     for (depth <- valDepths) {
-                        jobs.append(Job2(jobs.size, data, TYPE_RANDOM_FOREST, Map(
+                        jobs.append(Job2(jobs.size, data, TYPE_RANDOM_FOREST_CLASSIFIER, Map(
                             "impurity" -> impurity,
                             "bins" -> bins.toString,
                             "trees" -> trees.toString,
@@ -495,7 +706,7 @@ def add_random_forest(data: DataFrame, repetitions: Int, jobs: ListBuffer[Job2])
     }
 }
 
-def add_decision_tree(data: DataFrame, repetitions: Int, jobs: ListBuffer[Job2]): Unit = {
+def add_decision_tree_classifier(data: DataFrame, repetitions: Int, jobs: ListBuffer[Job2]): Unit = {
     
     val valImpurity = Array("gini", "entropy") // 2
     val valBins = Array(32, 64, 128, 256) // 4
@@ -505,7 +716,7 @@ def add_decision_tree(data: DataFrame, repetitions: Int, jobs: ListBuffer[Job2])
         for (impurity <- valImpurity) {
             for (bins <- valBins) {
                 for (depth <- valDepths) {
-                    jobs.append(Job2(jobs.size, data, TYPE_DECISION_TREE, Map(
+                    jobs.append(Job2(jobs.size, data, TYPE_DECISION_TREE_CLASSIFIER, Map(
                         "impurity" -> impurity,
                         "bins" -> bins.toString,
                         "depth" -> depth.toString,
@@ -518,7 +729,7 @@ def add_decision_tree(data: DataFrame, repetitions: Int, jobs: ListBuffer[Job2])
     }
 }
 
-def add_logistic_regression(data: DataFrame, repetitions: Int, jobs: ListBuffer[Job2]): Unit = {
+def add_logistic_regression_classifier(data: DataFrame, repetitions: Int, jobs: ListBuffer[Job2]): Unit = {
 
     val valReg = Array(0.3, 0.6, 0.9) // 3
     val valElasticNet = Array(0.2, 0.4, 0.6, 0.8) // 4
@@ -526,7 +737,7 @@ def add_logistic_regression(data: DataFrame, repetitions: Int, jobs: ListBuffer[
     for (repetition <- 1 to repetitions) {
         for (reg <- valReg) {
             for (elasticNet <- valElasticNet) {
-                jobs.append(Job2(jobs.size, data, TYPE_LOGISTIC_REGRESSION, Map(
+                jobs.append(Job2(jobs.size, data, TYPE_LOGISTIC_REGRESSION_CLASSIFIER, Map(
                     "reg" -> reg.toString,
                     "elasticNet" -> elasticNet.toString
                 )))
@@ -535,13 +746,119 @@ def add_logistic_regression(data: DataFrame, repetitions: Int, jobs: ListBuffer[
     }
 }
 
-def add_kmeans(data: DataFrame, repetitions: Int, jobs: ListBuffer[Job2]): Unit = {
+
+//////////////////////////////////////////////////////////////////////////////////////////
+// Add Regression Jobs
+//////////////////////////////////////////////////////////////////////////////////////////
+
+def add_linear_regression(data: DataFrame, repetitions: Int, jobs: ListBuffer[Job2]): Unit = {
+
+    val valReg = Array(0.3, 0.6, 0.9) // 3
+    val valElasticNet = Array(0.2, 0.4, 0.6, 0.8) // 4
+
+    for (repetition <- 1 to repetitions) {
+        for (reg <- valReg) {
+            for (elasticNet <- valElasticNet) {
+                jobs.append(Job2(jobs.size, data, TYPE_LINEAR_REGRESSION, Map(
+                    "reg" -> reg.toString,
+                    "elasticNet" -> elasticNet.toString
+                )))
+            }
+        }
+    }
+}
+
+def add_decision_tree_regression(data: DataFrame, repetitions: Int, jobs: ListBuffer[Job2]): Unit = {
+    
+    val valImpurity = Array("gini", "entropy") // 2
+    val valBins = Array(32, 64, 128, 256) // 4
+    val valDepths = Array(3, 5, 7) // 3
+
+    for (repetition <- 1 to repetitions) {
+        for (impurity <- valImpurity) {
+            for (bins <- valBins) {
+                for (depth <- valDepths) {
+                    jobs.append(Job2(jobs.size, data, TYPE_DECISION_TREE_REGRESSION, Map(
+                        "impurity" -> impurity,
+                        "bins" -> bins.toString,
+                        "depth" -> depth.toString,
+                    )))
+                }
+            }
+        }
+    }
+}
+
+def add_random_forest_regression(data: DataFrame, repetitions: Int, jobs: ListBuffer[Job2]): Unit = {
+
+    val valImpurity = Array("gini", "entropy") // 2
+    val valBins = Array(32, 64, 128, 256) // 4
+    val valTrees = Array(10, 20, 40) // 3
+    val valDepths = Array(3, 5, 7) // 3
+
+    for (repetition <- 1 to repetitions) {
+        for (impurity <- valImpurity) {
+            for (bins <- valBins) {
+                for (trees <- valTrees) {
+                    for (depth <- valDepths) {
+                        jobs.append(Job2(jobs.size, data, TYPE_RANDOM_FOREST_REGRESSION, Map(
+                            "impurity" -> impurity,
+                            "bins" -> bins.toString,
+                            "trees" -> trees.toString,
+                            "depth" -> depth.toString,
+                        )))
+                    }
+                }
+            }
+        }
+    }
+}
+
+def add_gradient_boosted_trees_regression(data: DataFrame, repetitions: Int, jobs: ListBuffer[Job2]): Unit = {
+
+    val valBins = Array(4, 8, 16, 32) // 4
+    val valDepths = Array(3, 5) // 2
+
+    for (repetition <- 1 to repetitions) {
+        for (bins <- valBins) {
+            for (depth <- valDepths) {
+                jobs.append(Job2(jobs.size, data, TYPE_GRADIENT_BOOSTED_TREES_REGRESSION, Map(
+                    "bins" -> bins.toString,
+                    "depth" -> depth.toString,
+                )))
+            }
+        }
+    }
+}
+
+def add_factorization_machine_regression(data: DataFrame, repetitions: Int, jobs: ListBuffer[Job2]): Unit = {
+    val valFactorSize = Array(2,4,8,16) // 4
+    val valRegParam = Array(0, 0.25, 0.5) // 3
+
+    for (repetition <- 1 to repetitions) {
+        for (factorSize <- valFactorSize) {
+            for (regParam <- valRegParam) {
+                jobs.append(Job2(jobs.size, data, TYPE_FACTORIZATION_MACHINE_REGRESSION, Map(
+                    "factorSize" -> factorSize.toString,
+                    "regParam" -> regParam.toString,
+                )))
+            }
+        }
+    }    
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////////////
+// Add Clustering Jobs
+///////////////////////////////////////////////////////////////////////////////////////////
+
+def add_kmeans_clustering(data: DataFrame, repetitions: Int, jobs: ListBuffer[Job2]): Unit = {
 
     val valClusters = Array(2, 3, 4, 5, 6, 7, 8, 9, 10) // 9
 
     for (repetition <- 1 to repetitions) {
         for (clusters <- valClusters) {
-            jobs.append(Job2(jobs.size, data, TYPE_KMEANS, Map(
+            jobs.append(Job2(jobs.size, data, TYPE_KMEANS_CLUSTERING, Map(
                 "clusters" -> clusters.toString,
             )))
         }
@@ -555,10 +872,10 @@ def add_kmeans(data: DataFrame, repetitions: Int, jobs: ListBuffer[Job2]): Unit 
 
 def main(args: Array[String]): Unit = {
 
-    var datasetFilepath = DATASET_CLASSIFIERS
-    var model = "kmeans"
+    var datasetFilepath = DATASET_CLASSIFICATION
     var numRepetitions = 10
     var numThreads = 1
+    var model = "lrc"
 
     for (arg <- args) {
       if (arg.startsWith("-m="))
@@ -582,42 +899,54 @@ def main(args: Array[String]): Unit = {
     val data = load_dataset(spark, datasetFilepath)
     val jobs = ListBuffer[Job2]()
 
+
     // Add classification models
-
     if (model == "svc" || model == "all" )
-        add_svc(data, numRepetitions, jobs)
+        add_support_vector_classifier(data, numRepetitions, jobs)
 
-    if (model == "fm" || model == "all" )
-        add_factorization_machine(data, numRepetitions, jobs)
+    if (model == "fmc" || model == "all" )
+        add_factorization_machine_classifier(data, numRepetitions, jobs)
 
-    if (model == "nb" || model == "all" )
-        add_naive_bayes(data, numRepetitions, jobs)
+    if (model == "nbc" || model == "all" )
+        add_naive_bayes_classifier(data, numRepetitions, jobs)
 
-    if (model == "mlp" || model == "all" )
-        add_mlp(data, numRepetitions, jobs)
+    if (model == "mlpc" || model == "all" )
+        add_mlp_classifier(data, numRepetitions, jobs)
 
-    if (model == "gbt" || model == "all" )
-        add_gradient_boosted_trees(data, numRepetitions, jobs)
+    if (model == "gbtc" || model == "all" )
+        add_gradient_boosted_trees_classifier(data, numRepetitions, jobs)
     
-    if (model == "rf" || model == "all" )
-        add_random_forest(data, numRepetitions, jobs)
+    if (model == "rfc" || model == "all" )
+        add_random_forest_classifier(data, numRepetitions, jobs)
     
-    if (model == "dt" || model == "all" )
-        add_decision_tree(data, numRepetitions, jobs)
+    if (model == "dtc" || model == "all" )
+        add_decision_tree_classifier(data, numRepetitions, jobs)
     
-    if (model == "lr" || model == "all" )
-        add_logistic_regression(data, numRepetitions, jobs)
+    if (model == "lrc" || model == "all" )
+        add_logistic_regression_classifier(data, numRepetitions, jobs)
     
+
     // Add regression models
-
+    if (model == "lr" || model == "all" )
+        add_linear_regression(data, numRepetitions, jobs)
+    
+    if (model == "dtr" || model == "all" )
+        add_decision_tree_regression(data, numRepetitions, jobs)
+    
+    if (model == "rfr" || model == "all" )
+        add_random_forest_regression(data, numRepetitions, jobs)
+    
+    if (model == "gbtr" || model == "all" )
+        add_gradient_boosted_trees_regression(data, numRepetitions, jobs)
+    
+    if (model == "fmr" || model == "all" )
+        add_factorization_machine_regression(data, numRepetitions, jobs)
     
 
     // Add clustering models
-
     if (model == "kmeans" || model == "all" )
-        add_kmeans(data, numRepetitions, jobs)
+        add_kmeans_clustering(data, numRepetitions, jobs)
     
-
 
     println("Model:" + model)
     println("Threads:" + numThreads)
@@ -646,7 +975,7 @@ def main(args: Array[String]): Unit = {
     println("Ellapsed time:" + ellapsed)
     println("Done!")
     spark.stop()
-    System.exit(0)    
+    System.exit(0)
 }
 
 }

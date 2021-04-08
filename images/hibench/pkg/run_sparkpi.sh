@@ -27,7 +27,7 @@ run_benchmark()
             --driver-memory 1g \
             --executor-memory 1g \
             --executor-cores 1 \
-            hdfs://bigdata2-primary:9000/automl-tunner_2.12-1.0.jar 64
+            hdfs://bigdata2-primary:9000/automl-tunner_2.12-1.0.jar 1000
 
         END=`date +%s`
         
