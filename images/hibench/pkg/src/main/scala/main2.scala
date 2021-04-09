@@ -469,7 +469,7 @@ def eval_decision_tree_regression(job: Job2): Result2 = {
     val featureIndexer = new VectorIndexer().setInputCol("features").setOutputCol("indexedFeatures").setMaxCategories(4).fit(job.data)
     val Array(trainingData, testData) = job.data.randomSplit(Array(0.7, 0.3))
 
-    val dt = new DecisionTreeClassifier()
+    val dt = new DecisionTreeRegressor()
         .setLabelCol("label")
         .setFeaturesCol("indexedFeatures")
         .setImpurity(impurity)
@@ -500,7 +500,7 @@ def eval_random_forest_regression(job: Job2): Result2 = {
     val featureIndexer = new VectorIndexer().setInputCol("features").setOutputCol("indexedFeatures").setMaxCategories(4).fit(job.data)
     val Array(trainingData, testData) = job.data.randomSplit(Array(0.7, 0.3))
 
-    val rf = new RandomForestClassifier()
+    val rf = new RandomForestRegressor()
         .setLabelCol("label")
         .setFeaturesCol("indexedFeatures")
         .setImpurity(impurity)
@@ -530,7 +530,7 @@ def eval_gradient_boosted_trees_regression(job: Job2): Result2 = {
     val featureIndexer = new VectorIndexer().setInputCol("features").setOutputCol("indexedFeatures").setMaxCategories(4).fit(job.data)
     val Array(trainingData, testData) = job.data.randomSplit(Array(0.7, 0.3))
 
-    val rf = new GBTClassifier()
+    val rf = new GBTRegressor()
         .setLabelCol("label")
         .setFeaturesCol("indexedFeatures")
         .setMaxIter(100)
@@ -559,7 +559,7 @@ def eval_factorization_machine_regression(job: Job2): Result2 = {
 
     val featureScaler = new MinMaxScaler().setInputCol("features").setOutputCol("scaledFeatures").fit(job.data)
 
-    val fm = new FMClassifier()
+    val fm = new FMRegressor()
         .setLabelCol("indexedLabel")
         .setFeaturesCol("scaledFeatures")
         .setFactorSize(factorSize)

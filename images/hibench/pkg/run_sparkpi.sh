@@ -39,7 +39,7 @@ run_benchmark()
     
     AVG=$(( $SUM / $N ))
     echo "Average time for SparkPI (N=$N) was $AVG seconds"
-    echo "SparkPI,$N" >> "$OUTPUT"
+    echo "SparkPI,$N,$AVG" >> "$OUTPUT"
 }
 
 rm -f $OUTPUT
