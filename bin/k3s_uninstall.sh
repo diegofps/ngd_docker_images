@@ -27,6 +27,8 @@ uninstall_host()
   sudo k3s-uninstall.sh
 }
 
+sudo echo "Starting..."
+
 for node in $NODES
 do
   uninstall_node $node &

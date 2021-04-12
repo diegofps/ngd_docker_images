@@ -60,7 +60,7 @@ run_benchmark()
 
 rm -f $OUTPUT
 
-N=4
+N=1
 R=5
 T=8
 
@@ -86,8 +86,10 @@ fi
 
 if [ "$GROUP" = "regression" -o "$GROUP" = "all" ]; then
   DS="hdfs://bigdata2-primary:9000/regression_dataset.libsvm"
-  run_benchmark nbc 30 $T $N $DS
-  run_benchmark fmc 5 $T $N $DS 1g
-  run_benchmark svc 5 $T $N $DS
+  run_benchmark lr 250 $T $N $DS
+  run_benchmark dtr 150 $T $N $DS
+  run_benchmark rfr 75 $T $N $DS
+  run_benchmark gbtr 15 $T $N $DS
+  run_benchmark fmr 50 $T $N $DS
 fi
 

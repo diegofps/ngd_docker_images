@@ -27,6 +27,8 @@ format_node()
   ssh $node sudo chmod 777 /media/storage
 }
 
+sudo echo "Starting..."
+
 format_host &
 
 for node in $NODES
