@@ -94,3 +94,5 @@ cat /hadoop/etc/hadoop/yarn-site.xml | sed 's/<\/configuration>/  <property>\n  
 cat /hadoop/etc/hadoop/yarn-site.xml | sed 's/<\/configuration>/\n  <property>\n    <name>yarn.web-proxy.address<\/name>\n    <value>0.0.0.0:9046<\/value>\n  <\/property>\n<\/configuration>/' > ./tmp && mv ./tmp /hadoop/etc/hadoop/yarn-site.xml
 
 
+# Remove unnecessary files
+rm -rf /hadoop/share/doc

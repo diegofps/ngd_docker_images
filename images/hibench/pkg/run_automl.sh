@@ -93,3 +93,5 @@ if [ "$GROUP" = "regression" -o "$GROUP" = "all" ]; then
   run_benchmark fmr 50 $T $N $DS
 fi
 
+echo "Content of output file"
+cat $OUTPUT

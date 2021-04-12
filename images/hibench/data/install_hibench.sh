@@ -30,4 +30,8 @@ echo "Configuring HiBench..."
 cat /hibench/conf/hadoop.conf.template | sed 's:/PATH/TO/YOUR/HADOOP/ROOT:/hadoop:' | sed 's|hdfs://localhost:8020|hdfs://bigdata2-primary:9000|' > /hibench/conf/hadoop.conf
 cat /hibench/conf/spark.conf.template | sed 's:/PATH/TO/YOUR/SPARK/HOME:/spark:' | sed 's|   yarn-client|   spark://bigdata2-primary:7077|' > /hibench/conf/spark.conf
 
+# Remove unnecessary files
+rm -rf /hibench/.git
+rm -rf /root/.m2
+
 exit 0

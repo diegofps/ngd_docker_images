@@ -47,3 +47,6 @@ rm -f $OUTPUT
 N=5
 
 run_benchmark $N 
+
+echo "Content of output file"
+cat $OUTPUT

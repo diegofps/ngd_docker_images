@@ -57,3 +57,6 @@ run_benchmark pca PCA large $N
 run_benchmark rf RF large $N
 run_benchmark svm SVM small $N
 run_benchmark svd SVD large $N
+
+echo "Content of output file"
+cat $OUTPUT
