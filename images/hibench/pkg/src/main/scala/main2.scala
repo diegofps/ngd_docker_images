@@ -462,7 +462,7 @@ def eval_linear_regression(job: Job2): Result2 = {
 def eval_decision_tree_regression(job: Job2): Result2 = {
     val p = job.model_params
     
-    val impurity = p("impurity")
+    //val impurity = p("impurity")
     val maxDepth = p("depth").toInt
     val maxBins = p("bins").toInt
 
@@ -472,7 +472,7 @@ def eval_decision_tree_regression(job: Job2): Result2 = {
     val dt = new DecisionTreeRegressor()
         .setLabelCol("label")
         .setFeaturesCol("indexedFeatures")
-        .setImpurity(impurity)
+        //.setImpurity(impurity)
         .setMaxDepth(maxDepth)
         .setMaxBins(maxBins)
 
@@ -493,7 +493,7 @@ def eval_random_forest_regression(job: Job2): Result2 = {
     val p = job.model_params
     
     val numTrees = p("trees").toInt
-    val impurity = p("impurity")
+    //val impurity = p("impurity")
     val maxDepth = p("depth").toInt
     val maxBins = p("bins").toInt
 
@@ -503,7 +503,7 @@ def eval_random_forest_regression(job: Job2): Result2 = {
     val rf = new RandomForestRegressor()
         .setLabelCol("label")
         .setFeaturesCol("indexedFeatures")
-        .setImpurity(impurity)
+        //.setImpurity(impurity)
         .setMaxDepth(maxDepth)
         .setMaxBins(maxBins)
         .setNumTrees(numTrees)
@@ -560,7 +560,7 @@ def eval_factorization_machine_regression(job: Job2): Result2 = {
     val featureScaler = new MinMaxScaler().setInputCol("features").setOutputCol("scaledFeatures").fit(job.data)
 
     val fm = new FMRegressor()
-        .setLabelCol("indexedLabel")
+        .setLabelCol("label")
         .setFeaturesCol("scaledFeatures")
         .setFactorSize(factorSize)
         .setRegParam(regParam)
@@ -770,39 +770,39 @@ def add_linear_regression(data: DataFrame, repetitions: Int, jobs: ListBuffer[Jo
 
 def add_decision_tree_regression(data: DataFrame, repetitions: Int, jobs: ListBuffer[Job2]): Unit = {
     
-    val valImpurity = Array("gini", "entropy") // 2
+    //val valImpurity = Array("gini", "entropy") // 2
     val valBins = Array(32, 64, 128, 256) // 4
     val valDepths = Array(3, 5, 7) // 3
 
     for (repetition <- 1 to repetitions) {
-        for (impurity <- valImpurity) {
+        //for (impurity <- valImpurity) {
             for (bins <- valBins) {
                 for (depth <- valDepths) {
                     jobs.append(Job2(jobs.size, data, TYPE_DECISION_TREE_REGRESSION, Map(
-                        "impurity" -> impurity,
+          //              "impurity" -> impurity,
                         "bins" -> bins.toString,
                         "depth" -> depth.toString,
                     )))
                 }
             }
-        }
+        //}
     }
 }
 
 def add_random_forest_regression(data: DataFrame, repetitions: Int, jobs: ListBuffer[Job2]): Unit = {
 
-    val valImpurity = Array("gini", "entropy") // 2
+    //val valImpurity = Array("gini", "entropy") // 2
     val valBins = Array(32, 64, 128, 256) // 4
     val valTrees = Array(10, 20, 40) // 3
     val valDepths = Array(3, 5, 7) // 3
 
     for (repetition <- 1 to repetitions) {
-        for (impurity <- valImpurity) {
+        //for (impurity <- valImpurity) {
             for (bins <- valBins) {
                 for (trees <- valTrees) {
                     for (depth <- valDepths) {
                         jobs.append(Job2(jobs.size, data, TYPE_RANDOM_FOREST_REGRESSION, Map(
-                            "impurity" -> impurity,
+                            //"impurity" -> impurity,
                             "bins" -> bins.toString,
                             "trees" -> trees.toString,
                             "depth" -> depth.toString,
@@ -810,7 +810,7 @@ def add_random_forest_regression(data: DataFrame, repetitions: Int, jobs: ListBu
                     }
                 }
             }
-        }
+        //}
     }
 }
 

@@ -44,7 +44,7 @@ run_benchmark()
 
 rm -f $OUTPUT
 
-N=10
+N=5
 
 run_benchmark $N 
 
