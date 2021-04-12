@@ -91,3 +91,5 @@ if [ "$GROUP" = "regression" -o "$GROUP" = "all" ]; then
   run_benchmark svc 5 $T $N $DS
 fi
 
+echo "Content of output file"
+cat $OUTPUT
