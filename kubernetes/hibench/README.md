@@ -4,71 +4,134 @@
 
 - [README](#readme)
   - [Table of Contents](#table-of-contents)
-  - [Getting started](#getting-started)
-    - [Deploy](#deploy)
-  - [Common Tasks](#common-tasks)
-  - [Send data to hdfs](#send-data-to-hdfs)
+  - [Frequent Tasks](#frequent-tasks)
+    - [Preparing everything for the first use](#preparing-everything-for-the-first-use)
+    - [Deploy / Undeploy the Containers](#deploy--undeploy-the-containers)
+    - [Deploy dataset to HDFS](#deploy-dataset-to-hdfs)
+    - [Deploy the scala application](#deploy-the-scala-application)
+    - [Running the experiments](#running-the-experiments)
     - [Debugging](#debugging)
-  - [Cleaning Up](#cleaning-up)
-    - [Undeploy](#undeploy)
-    - [Clear Data in all datanodes](#clear-data-in-all-datanodes)
 
-## Getting started
+## Frequent Tasks
 
-### Deploy
+### Preparing everything for the first use
 
 ```bash
-sudo kubectl create -f 'primary.yaml'
-sudo kubectl create -f 'primary_service.yaml'
-sudo kubectl create -f 'secondary.yaml'
+# Run install_pwd.sh to add ngd_docker_images/bin on your PATH, in ~/.bashrc
+cd /path/to/ngd_docker_images/bin
+./install_pwd.sh
+
+# Format the drivers (you only need to do this once)
+storage_format.sh
+
+# Clear all data folders (do this after every call to undeploy.sh)
+storage_clear.sh
 ```
 
-## Common Tasks
+### Deploy / Undeploy the Containers
 
-## Send data to hdfs
+To deploy:
 
 ```bash
-# Start and connect to a client using the mounted volume in client.yaml
-sudo kubectl create -f client.yaml
-sudo kubectl exec -it bigdata2-client -- bash
+# Deploy as hybrid system (CSD + Host)
+./deploy.sh hybrid
 
-# Send  the parquet files
-hadoop fs -put /ipsms/test.snappy.parquet hdfs://bigdata2-primary:9000/test.snappy.parquet
-hadoop fs -put /ipsms/train.snappy.parquet hdfs://bigdata2-primary:9000/train.snappy.parquet
-hadoop fs -put /ipsms/sample_submission.csv hdfs://bigdata2-primary:9000/sample_submission.csv
+# Deploy as host only
+./deploy.sh host
 
-# Update replicate parameter for individual files
-hdfs dfs -setrep -w 3 /test.snappy.parquet
-hdfs dfs -setrep -w 3 /train.snappy.parquet
-hdfs dfs -setrep -w 3 /sample_submission.csv
+# Deploy as CSD only
+./deploy.sh csd
+```
+
+To undeploy:
+
+```bash
+./undeploy.sh
+
+# You need to erase the datanodes if you want to deploy it again
+storage_clear.sh
+```
+
+### Deploy dataset to HDFS
+
+```bash
+# Build the dataset
+./dataset_build.sh
+
+# Deploy it (this will copy the generated dataset to bigdata2-primary and then to HDFS)
+./dataset_deploy.sh
+```
+
+### Deploy the scala application
+
+```bash
+# Build the app
+./pkg_build.sh
+
+# Deploy it (this will copy the generated application to bigdata2-primary and then to HDFS)
+./pkg_deploy.sh
+```
+
+### Running the experiments
+
+```bash
+# Access bigdata2-primary
+sudo kubectl exec -it bigdata2-primary -- bash
+
+# To run SparkPI (replace host with the configuration you are using)
+/usr/bin/time -v ./run_sparkpi.sh ./sparkpi_host.csv
+
+# To run all HiBench benchamrks
+/usr/bin/time -v ./run_hibench.sh ./hibench_host.csv
+
+# To run all AutoML benchmarks
+/usr/bin/time -v ./run_automl.sh ./automl_host.csv all
 ```
 
 ### Debugging
 
+Hadoop master
+
 ```bash
-# Open the primary container or a datanode (secondary)
+# Open the primary container
 sudo kubectl exec -it bigdata2-primary -- bash
 
-# Open tha log
-tail -f /hadoop/logs/hadoop-root-namenode-bigdata2-primary.log
+# Open the namenode log
 tail -f /hadoop/logs/hadoop-root-namenode-bigdata2-primary.log
 ```
 
-## Cleaning Up
-
-
-### Undeploy
+Hadoop slaves
 
 ```bash
-sudo kubectl delete -f 'primary.yaml'
-sudo kubectl delete -f 'primary_service.yaml'
-sudo kubectl delete -f 'secondary.yaml'
+# List all containers with
+sudo kubectl get pods -o wide
 
-sudo kubectl delete -f 'client.yaml'
+# Open the worker container you want to debug. Example:
+sudo kubectl exec -it bigdata2-secondary-host-sp9fk -- bash
+
+# Open the worker log
+tail -f /hadoop/logs/hadoop-root-datanode-bigdata2-secondary-*.log
 ```
 
-### Clear Data in all datanodes
+Spark Master
 
 ```bash
-parallel-ssh -h ~/nodes -i -t 0 'sudo rm -rf /media/storage/dfs_datanode'
+# Open the primary container
+sudo kubectl exec -it bigdata2-primary -- bash
+
+# Open the logs
+tail -f /spark/logs/spark--org.apache.spark.deploy.master.Master-1-bigdata2-primary.out
+```
+
+Spark slaves
+
+```bash
+# List all containers with
+sudo kubectl get pods -o wide
+
+# Open the worker container you want to debug. Example:
+sudo kubectl exec -it bigdata2-secondary-host-sp9fk -- bash
+
+# Open the worker log
+tail -f /spark/logs/spark--org.apache.spark.deploy.worker.Worker-1-bigdata2-secondary-*.out
 ```
