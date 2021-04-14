@@ -462,7 +462,6 @@ def eval_linear_regression(job: Job2): Result2 = {
 def eval_decision_tree_regression(job: Job2): Result2 = {
     val p = job.model_params
     
-    //val impurity = p("impurity")
     val maxDepth = p("depth").toInt
     val maxBins = p("bins").toInt
 
@@ -472,7 +471,6 @@ def eval_decision_tree_regression(job: Job2): Result2 = {
     val dt = new DecisionTreeRegressor()
         .setLabelCol("label")
         .setFeaturesCol("indexedFeatures")
-        //.setImpurity(impurity)
         .setMaxDepth(maxDepth)
         .setMaxBins(maxBins)
 
