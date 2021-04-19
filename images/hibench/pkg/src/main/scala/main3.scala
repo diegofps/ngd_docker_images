@@ -89,6 +89,7 @@ import org.apache.spark.ml.regression.{FMRegressionModel, FMRegressor}
 case class Params(
     appName: String,
     dataset: String, 
+    partitionSize: Int,
     model: String, 
     maxIters: Int,
     regParam: Double,
@@ -402,7 +403,10 @@ def eval_decision_tree_regression(data: DataFrame, p: Params): Double = {
 
     // Test
     val predictions = model.transform(testData)
-    val evaluator = new RegressionEvaluator().setLabelCol("label").setPredictionCol("prediction").setMetricName("rmse")
+    val evaluator = new RegressionEvaluator()
+        .setLabelCol("label")
+        .setPredictionCol("prediction")
+        .setMetricName("rmse")
     
     return evaluator.evaluate(predictions)
 }
@@ -534,16 +538,28 @@ def eval_kmeans_clustering(data: DataFrame, p: Params): Double = {
 // Utils
 ///////////////////////////////////////////////////////////////////////////////////////////
 
-def load_dataset(spark: SparkSession, filepath: String): DataFrame = {
-    val data = spark.read.format("libsvm").load(filepath)
-    data.cache()
-    return data
+def load_dataset(spark: SparkSession, p: Params): DataFrame = {
+    val data = spark.read.format("libsvm").load(p.dataset)
+
+    if (p.partitionSize > 0)
+    {
+        val numPartitions = math.floor(data.count() / p.partitionSize).toInt
+        val data3 = data.repartition(numPartitions)
+        data3.cache
+        return data3
+    }
+    else
+    {
+        data.cache
+        return data
+    }
 }
 
 def parse_params(args: Array[String]): Params = {
 
     var appName = "AutoML2"
     var dataset = "hdfs://bigdata2-primary:9000/classification_dataset.libsvm"
+    var partitionSize = 0
     var model = "lrc"
     var maxIters = 1000
     var regParam = 0.1
@@ -566,6 +582,9 @@ def parse_params(args: Array[String]): Params = {
         
         else if (arg.startsWith("-dataset="))
             dataset = arg.drop("-dataset=".length)
+        
+        else if (arg.startsWith("-partitionSize="))
+            partitionSize = arg.drop("-partitionSize=".length).toInt
         
         else if (arg.startsWith("-model="))
             model = arg.drop("-model=".length)
@@ -617,6 +636,7 @@ def parse_params(args: Array[String]): Params = {
     return Params(
         appName,
         dataset,
+        partitionSize,
         model, 
         maxIters,
         regParam,
@@ -644,6 +664,7 @@ def main(args: Array[String]): Unit = {
 
     println("appName:", p.appName)
     println("dataset:", p.dataset)
+    println("partitionSize:", p.partitionSize)
     println("model:", p.model)
     println("maxIters:", p.maxIters)
     println("regParam:", p.regParam)
@@ -660,7 +681,7 @@ def main(args: Array[String]): Unit = {
     println("maxCategories:", p.maxCategories)
 
     val spark = SparkSession.builder.appName(p.appName).getOrCreate()
-    val data = load_dataset(spark, p.dataset)
+    val data = load_dataset(spark, p)
 
     val startedAt = System.currentTimeMillis()
     
