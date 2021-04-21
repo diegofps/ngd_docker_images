@@ -24,7 +24,7 @@ spec:
         name: shared
     env:
       - name: MODE
-        value: sleep
+        value: client
     ports:
       - containerPort: 2181
       - containerPort: 4040

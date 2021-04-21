@@ -5,16 +5,9 @@ SIZE=$1
 DIMS=$2
 IDD=$3
 
-if [ "$SIZE" = "" ]; then
-  SIZE=1
-fi
-
-if [ "$DIMS" = "" ]; then
-  DIMS=20
-fi
-
-if [ "$IDD" = "" ]; then
-  IDD="generic"
+if [ ! "$#" = "3" ]; then
+  echo "SINTAX: $0 <SIZE> <DIMS> <IDD>"
+  exit 1
 fi
 
 SAMPLES_CLASSIFICATION=$(( SIZE * 2500 ))

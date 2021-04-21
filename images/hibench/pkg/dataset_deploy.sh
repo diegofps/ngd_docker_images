@@ -2,9 +2,10 @@
 
 IDD=$1
 
-if [ "$IDD" = "" ]
+if [ ! "$#" = "1" ]
 then
-  IDD="1"
+  echo "SINTAX: $0 <IDD>"
+  exit 1
 fi
 
 NAME="classification_dataset_${IDD}"
@@ -20,6 +21,10 @@ sudo kubectl exec -it bigdata2-primary -- hadoop fs -rm /regression_dataset.libs
 echo "Adding dataset to hadoop in /"
 sudo kubectl exec -it bigdata2-primary -- hadoop fs -put /app/classification_dataset.libsvm /classification_dataset.libsvm
 sudo kubectl exec -it bigdata2-primary -- hadoop fs -put /app/regression_dataset.libsvm /regression_dataset.libsvm
+
+echo "Removing the datasets from the container"
+sudo kubectl exec -it bigdata2-primary -- rm /app/classification_dataset.libsvm
+sudo kubectl exec -it bigdata2-primary -- rm /app/regression_dataset.libsvm
 
 echo "Displaying hadoop content in /"
 sudo kubectl exec -it bigdata2-primary -- hadoop fs -ls -h /

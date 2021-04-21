@@ -3,7 +3,7 @@
 MODE=$1
 
 if [ "$MODE" = "csd" ]; then
-  echo "Deploying in csd mode"
+  sudo echo "Deploying in csd mode"
 
   storage_clear.sh
 
@@ -12,9 +12,10 @@ if [ "$MODE" = "csd" ]; then
   sudo kubectl create -f primary_service.yaml &
 
   wait
+  k3s_wait.sh start
 
 elif [ "$MODE" = "hybrid" ]; then
-  echo "Deploying in hybrid mode"
+  sudo echo "Deploying in hybrid mode"
 
   storage_clear.sh
 
@@ -24,9 +25,10 @@ elif [ "$MODE" = "hybrid" ]; then
   sudo kubectl create -f primary_service.yaml &
 
   wait
+  k3s_wait.sh start
 
 elif [ "$MODE" = "host" ]; then
-  echo "Deploying in host mode"
+  sudo echo "Deploying in host mode"
 
   storage_clear.sh
 
@@ -35,6 +37,7 @@ elif [ "$MODE" = "host" ]; then
   sudo kubectl create -f primary_service.yaml &
 
   wait
+  k3s_wait.sh start
 
 else
   echo "Unknown deploy mode ($MODE). Options are: host, hybrid and csd"
