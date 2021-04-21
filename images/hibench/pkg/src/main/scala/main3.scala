@@ -540,17 +540,23 @@ def eval_kmeans_clustering(data: DataFrame, p: Params): Double = {
 
 def load_dataset(spark: SparkSession, p: Params): DataFrame = {
     val data = spark.read.format("libsvm").load(p.dataset)
+    val partitionsBefore = data.rdd.getNumPartitions
 
     if (p.partitionSize > 0)
     {
-        val numPartitions = math.floor(data.count() / p.partitionSize).toInt
+        val numPartitions = p.partitionSize
         val data3 = data.repartition(numPartitions)
+        val partitionsNow = data3.rdd.getNumPartitions
         data3.cache
+
+        println("Partitions before: %d, Partitions now: %d", partitionsBefore, partitionsNow)
         return data3
     }
     else
     {
         data.cache
+
+        println("Partitions before: %d, Partitions now: %d", partitionsBefore, partitionsBefore)
         return data
     }
 }
@@ -734,7 +740,7 @@ def main(args: Array[String]): Unit = {
     
     val ellapsed = (System.currentTimeMillis() - startedAt) / 1000.0
 
-    println("Ellapsed time: " + ellapsed + " ms")
+    println("Ellapsed time: " + ellapsed + " s")
     println("Done!")
 
     spark.stop()

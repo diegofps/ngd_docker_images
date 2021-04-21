@@ -17,7 +17,7 @@ fi
 check_ecdsa()
 {
   NODE=$1
-  echo "Fixing ECDSA issues for node $NODE..."
+  echo "Fixing possible ECDSA issues for node $NODE..."
   
   ssh $NODE -o BatchMode=yes -o StrictHostKeyChecking=no echo > /dev/null
 }
