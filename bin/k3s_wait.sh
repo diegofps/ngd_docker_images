@@ -49,6 +49,22 @@ function wait_end
     done
 }
 
+wait_counter()
+{
+  N=$1
+
+  if [ "$N" = "" ]; then
+    N=3
+  fi
+
+  while [ ! $N -le 0 ]
+  do
+    echo "$N..."
+    sleep 1
+    N=$(( N - 1 ))
+  done
+}
+
 TARGET=$1
 
 if [ -z "$TARGET" ]; then
@@ -59,6 +75,9 @@ elif [ $TARGET == "start" ]; then
 
 elif [ $TARGET == "end" ]; then
     wait_end
+
+elif [ $TARGET == "counter" ]; then
+    wait_counter $2
 
 else
     echo "Invalid option: $TARGET"
