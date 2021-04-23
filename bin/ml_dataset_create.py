@@ -79,7 +79,7 @@ if task == "classification":
         
         filepath = "%s.%d_%d_%d_%d" % (output, *job)
         
-        dump_svmlight_file(x, y, filepath)
+        dump_svmlight_file(x, y, filepath, zero_based=False)
         
         return filepath
 
@@ -128,7 +128,7 @@ elif task == "regression":
         
         filepath = "%s.%d_%d_%d" % (output, *job)
         
-        dump_svmlight_file(x, y, filepath)
+        dump_svmlight_file(x, y, filepath, zero_based=False)
         
         return filepath
 

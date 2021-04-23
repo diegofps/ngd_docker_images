@@ -9,7 +9,8 @@ NODES=`sudo nvme list | grep 'nvme' | awk '{ print $1 }' | sed 's:/dev/nvme\([0-
 
 for i in $NODES
 do
-    sudo nvme format /dev/nvme${i}n1 -s 2 &
+    echo "Formatting nvme$in1"
+    sudo nvme format /dev/nvme${i}n1 -s 2
 done
 wait
 

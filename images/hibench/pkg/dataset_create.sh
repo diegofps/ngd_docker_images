@@ -1,14 +1,15 @@
 #!/bin/sh
 
 
-if [ ! "$#" = "3" ]; then
-  echo "SINTAX: $0 <SAMPLES> <DIMS> <MODE>"
+if [ ! "$#" = "4" ]; then
+  echo "SINTAX: $0 <SAMPLES> <DIMS> <MODE> <TYPE>"
   exit 1
 fi
 
 SAMPLES=$1
 DIMS=$2
 MODE=$3
+TYPE=$4
 CLUSTERS="100"
 NOISE="0.2"
 LABELS=2
@@ -22,29 +23,38 @@ then
   echo "Deploying ml_dataset_create.py to bigdata2-primary"
   sudo kubectl cp `which ml_dataset_create.py` bigdata2-primary:/app/ml_dataset_create.py
 
+  if [ "$TYPE" = "classification" ]; then
 
-  echo "Creating classification dataset"
-  sudo kubectl exec -it bigdata2-primary -- /app/ml_dataset_create.py \
-	  $SAMPLES $DIMS $CLUSTERS $NOISE $LABELS $JOB_SIZE classification /app/classification.libsvm
-
-  echo "Deploying classification dataset to hdfs"
-  sudo kubectl exec -it bigdata2-primary -- hadoop fs -rm /classification.libsvm
-  sudo kubectl exec -it bigdata2-primary -- hadoop fs -put /app/classification.libsvm /
-
-  echo "Removing classification dataset from local container folder"
-  sudo kubectl exec -it bigdata2-primary -- rm /app/classification.libsvm
+    echo "Creating classification dataset"
+    sudo kubectl exec -it bigdata2-primary -- /app/ml_dataset_create.py \
+  	  $SAMPLES $DIMS $CLUSTERS $NOISE $LABELS $JOB_SIZE classification /app/classification.libsvm
   
+    echo "Deploying classification dataset to hdfs"
+    sudo kubectl exec -it bigdata2-primary -- hadoop fs -rm /classification.libsvm
+    sudo kubectl exec -it bigdata2-primary -- hadoop fs -put /app/classification.libsvm /
+  
+    echo "Removing classification dataset from local container folder"
+    sudo kubectl exec -it bigdata2-primary -- rm /app/classification.libsvm
 
-  echo "Creating regression dataset"
-  sudo kubectl exec -it bigdata2-primary -- /app/ml_dataset_create.py \
-          $SAMPLES $DIMS $CLUSTERS $NOISE $LABELS $JOB_SIZE regression /app/regression.libsvm
+  elif [ "$TYPE" = "regression" ]; then
 
-  echo "Deploying regression dataset to hdfs"
-  sudo kubectl exec -it bigdata2-primary -- hadoop fs -rm /regression.libsvm
-  sudo kubectl exec -it bigdata2-primary -- hadoop fs -put /app/regression.libsvm /
+    echo "Creating regression dataset"
+    sudo kubectl exec -it bigdata2-primary -- /app/ml_dataset_create.py \
+            $SAMPLES $DIMS $CLUSTERS $NOISE $LABELS $JOB_SIZE regression /app/regression.libsvm
+  
+    echo "Deploying regression dataset to hdfs"
+    sudo kubectl exec -it bigdata2-primary -- hadoop fs -rm /regression.libsvm
+    sudo kubectl exec -it bigdata2-primary -- hadoop fs -put /app/regression.libsvm /
+  
+    echo "Removing regression dataset from local container folder"
+    sudo kubectl exec -it bigdata2-primary -- rm /app/regression.libsvm
 
-  echo "Removing regression dataset from local container folder"
-  sudo kubectl exec -it bigdata2-primary -- rm /app/regression.libsvm
+  else
+
+    echo "Invalid TYPE, options are: classification, regression"
+    exit 1
+
+  fi
 
 
   echo "Displaying hdfs content"
@@ -56,25 +66,36 @@ then
   echo "Deploying in local mode."
 
 
-  echo "Creating classification dataset"
-  ml_dataset_create.py $SAMPLES $DIMS $CLUSTERS $NOISE $LABELS $JOB_SIZE classification ./classification.libsvm
+  if [ "$TYPE" = "classification" ]; then
 
-  echo "Deploying classification dataset to all worker nodes"
-  ./deploy_file.sh bigdata2-secondary ./classification.libsvm /app/classification.libsvm
+    echo "Creating classification dataset"
+    ml_dataset_create.py $SAMPLES $DIMS $CLUSTERS $NOISE $LABELS $JOB_SIZE classification ./classification.libsvm
+  
+    echo "Deploying classification dataset to all worker nodes"
+    ./deploy_file.sh "bigdata2-secondary" ./classification.libsvm /app/classification.libsvm
+    ./deploy_file.sh "^bigdata2-primary" ./classification.libsvm /app/classification.libsvm
+  
+    echo "Removing classification dataset from local folder"
+    rm ./classification.libsvm
 
-  echo "Removing classification dataset from local folder"
-  rm ./classification.libsvm
+  elif [ "$TYPE" = "regression" ]; then
 
+    echo "Creating regression dataset"
+    ml_dataset_create.py $SAMPLES $DIMS $CLUSTERS $NOISE $LABELS $JOB_SIZE regression ./regression.libsvm
+  
+    echo "Deploying regression dataset to all worker nodes"
+    ./deploy_file.sh "bigdata2-secondary" ./regression.libsvm /app/regression.libsvm
+    ./deploy_file.sh "^bigdata2-primary" ./regression.libsvm /app/regression.libsvm
+  
+    echo "Removing regression dataset from local folder"
+    rm ./regression.libsvm
 
-  echo "Creating regression dataset"
-  ml_dataset_create.py $SAMPLES $DIMS $CLUSTERS $NOISE $LABELS $JOB_SIZE regression ./regression.libsvm
+  else
 
-  echo "Deploying regression dataset to all worker nodes"
-  ./deploy_file.sh bigdata2-secondary ./regression.libsvm /app/regression.libsvm
+    echo "Invalid TYPE, options are: classification, regression"
+    exit 1
 
-  echo "Removing regression dataset from local folder"
-  rm ./regression.libsvm
-
+  fi
 
 else
   echo "Invalid mode, options: local, hdfs"
