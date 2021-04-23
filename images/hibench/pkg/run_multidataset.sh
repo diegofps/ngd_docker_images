@@ -1,71 +1,75 @@
 #!/bin/sh
 
 
-#if [ ! `whoami` = 'root' ]
-#then
-#  echo "You should run this script as root, aborting"
-#  exit 0
-#fi
-
-
-OUTPUT=$1
-
-if [ "$OUTPUT" = "" ]
-then
-  OUTPUT="./multidataset.csv"
+if [ ! "$#" = 2 ]; then
+  echo "SINTAX: $0 <MODE=hdfs|local> <OUTPUT>"
+  exit 1
 fi
 
+MODE=$1
+OUTPUT=$2
 
 sudo echo "Starting multidataset experiment..."
 
 ADDRESS=`sudo kubectl exec -it bigdata2-primary -- hostname -I`
 SPARK_PARAMS="--driver-memory 4g --executor-memory 4g"
 
+if [ "$MODE" = "hdfs" ]; then
+  DATASET="hdfs://bigdata2-primary:9000/regression.libsvm"
+
+elif [ "$MODE" = "local" ]; then
+  DATASET="/app/regression.libsvm"
+
+else
+  echo "Invalid mode, options are: hdfs, local"
+  exit 1
+
+fi
+
 run_benchmark_set()
 {
-  SIZE=$1
+  SAMPLES=$1
 
-  ./dataset_build.sh $SIZE 30 $SIZE
-  ./dataset_deploy.sh $SIZE
+  ./dataset_create.sh $SAMPLES 30 $MODE regression
 
-  rm -rf classification_dataset_${SIZE}.libsvm
-  rm -rf regression_dataset_${SIZE}.libsvm
+  if [ "$MODE" = "hdfs" ]; then
+    DS_SIZE=`sudo kubectl exec -it bigdata2-primary -- hadoop fs -ls -h / | grep regression.libsvm | awk '{ print $5 $6 }'`
+  elif [ "$MODE" = "local" ]; then
+    DS_SIZE=`sudo kubectl exec -it bigdata2-primary -- ls -lh /app | grep regression.libsvm | awk '{ print $5 }'`
+  else
+    DS_ZIE="0"
+  fi
 
-  echo -n "$SIZE" >> $OUTPUT
+  echo -n "$MODE;$SAMPLES;$DS_SIZE" >> $OUTPUT
 
   echo "Running lr..."
   VAL=$(sudo kubectl exec -it bigdata2-primary -- /app/run_single.sh "$SPARK_PARAMS" "\
-      -dataset=hdfs://bigdata2-primary:9000/regression_dataset.libsvm \
-      -appName=Multidataset -model=lr" | grep "Ellapsed time" | awk '{ print $3 }')
+      -dataset=$DATASET -appName=Multidataset -model=lr" | grep "Ellapsed time" | awk '{ print $3 }')
   echo -n ";$VAL" >> $OUTPUT
 
   echo "Starting dtr..."
   VAL=$(sudo kubectl exec -it bigdata2-primary -- /app/run_single.sh "$SPARK_PARAMS" "\
-      -dataset=hdfs://bigdata2-primary:9000/regression_dataset.libsvm \
-      -appName=Multidataset -model=dtr" | grep "Ellapsed time" | awk '{ print $3 }')
+      -dataset=$DATASET -appName=Multidataset -model=dtr" | grep "Ellapsed time" | awk '{ print $3 }')
   echo -n ";$VAL" >> $OUTPUT
 
   echo "Starting rfr"
   VAL=$(sudo kubectl exec -it bigdata2-primary -- /app/run_single.sh "$SPARK_PARAMS" "\
-      -dataset=hdfs://bigdata2-primary:9000/regression_dataset.libsvm \
-      -appName=Multidataset -model=rfr" | grep "Ellapsed time" | awk '{ print $3 }')
+      -dataset=$DATASET -appName=Multidataset -model=rfr" | grep "Ellapsed time" | awk '{ print $3 }')
   echo -n ";$VAL" >> $OUTPUT
 
   #echo "Starting gbtr..."
   #VAL=$(sudo kubectl exec -it bigdata2-primary -- /app/run_single.sh "$SPARK_PARAMS" "\
-  #    -dataset=hdfs://bigdata2-primary:9000/regression_dataset.libsvm \
-  #    -appName=Multidataset -model=gbtr" | grep "Ellapsed time" | awk '{ print $3 }')
+  #    -dataset=$DATASET -appName=Multidataset -model=gbtr" | grep "Ellapsed time" | awk '{ print $3 }')
   #echo -n ";$VAL" >> $OUTPUT
 
   echo "Starting fmr..."
   VAL=$(sudo kubectl exec -it bigdata2-primary -- /app/run_single.sh "$SPARK_PARAMS" "\
-      -dataset=hdfs://bigdata2-primary:9000/regression_dataset.libsvm \
-      -appName=Multidataset -model=fmr" | grep "Ellapsed time" | awk '{ print $3 }')
+      -dataset=$DATASET -appName=Multidataset -model=fmr" | grep "Ellapsed time" | awk '{ print $3 }')
   echo -n ";$VAL" >> $OUTPUT
 
   echo "" >> $OUTPUT
 
-  echo "Finished analysis for SIZE=$SIZE"
+  echo "Finished analysis for SIZE=$SAMPLES"
 }
 
 echo "Building and deploying the pkg"
@@ -74,18 +78,18 @@ echo "Building and deploying the pkg"
 
 
 echo "Cleaning the output file"
-echo "SIZE;lr;dtr;rfr;fmr" > $OUTPUT
+echo "MODE;SAMPLES;DS_SIZE;lr;dtr;rfr;fmr" > $OUTPUT
 
 
 echo "Starting multidataset regression analysis"
-for i in 1 10 100 1000 10000 
+for i in 100 1000 10000 100000 1000000 10000000 100000000
 do
   echo " --- Starting benchmark for size=$i --- "
   run_benchmark_set $i
   echo " --- Ended benchmark for size=$i --- "
 done
 
-echo "Results"
+echo "Showing Results"
 cat $OUTPUT
 
 echo "Done!"

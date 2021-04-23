@@ -89,7 +89,7 @@ import org.apache.spark.ml.regression.{FMRegressionModel, FMRegressor}
 case class Params(
     appName: String,
     dataset: String, 
-    partitionSize: Int,
+    numPartitions: Int,
     model: String, 
     maxIters: Int,
     regParam: Double,
@@ -103,7 +103,8 @@ case class Params(
     elasticNet: Double,
     stepSize: Double,
     numClusters: Int,
-    maxCategories: Int)
+    maxCategories: Int,
+    numFeatures: String)
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 // Main class object
@@ -539,13 +540,15 @@ def eval_kmeans_clustering(data: DataFrame, p: Params): Double = {
 ///////////////////////////////////////////////////////////////////////////////////////////
 
 def load_dataset(spark: SparkSession, p: Params): DataFrame = {
-    val data = spark.read.format("libsvm").load(p.dataset)
-    val partitionsBefore = data.rdd.getNumPartitions
-
-    if (p.partitionSize > 0)
+    val data = spark.read
+        .format("libsvm")
+        .option("numFeatures", p.numFeatures)
+        .load(p.dataset)
+    
+    if (p.numPartitions > 0)
     {
-        val numPartitions = p.partitionSize
-        val data3 = data.repartition(numPartitions)
+        val partitionsBefore = data.rdd.getNumPartitions
+        val data3 = data.repartition(p.numPartitions)
         val partitionsNow = data3.rdd.getNumPartitions
         data3.cache
 
@@ -554,9 +557,11 @@ def load_dataset(spark: SparkSession, p: Params): DataFrame = {
     }
     else
     {
+        val partitionsBefore = data.rdd.getNumPartitions
+        val partitionsNow = data.rdd.getNumPartitions
         data.cache
 
-        println("Partitions before: %d, Partitions now: %d", partitionsBefore, partitionsBefore)
+        println("Partitions before: %d, Partitions now: %d", partitionsBefore, partitionsNow)
         return data
     }
 }
@@ -565,7 +570,7 @@ def parse_params(args: Array[String]): Params = {
 
     var appName = "AutoML2"
     var dataset = "hdfs://bigdata2-primary:9000/classification_dataset.libsvm"
-    var partitionSize = 0
+    var numPartitions = 0
     var model = "lrc"
     var maxIters = 1000
     var regParam = 0.1
@@ -580,6 +585,7 @@ def parse_params(args: Array[String]): Params = {
     var stepSize = 0.001
     var numClusters = 10
     var maxCategories = 4
+    var numFeatures = "30"
 
     for (arg <- args) {
 
@@ -589,8 +595,11 @@ def parse_params(args: Array[String]): Params = {
         else if (arg.startsWith("-dataset="))
             dataset = arg.drop("-dataset=".length)
         
-        else if (arg.startsWith("-partitionSize="))
-            partitionSize = arg.drop("-partitionSize=".length).toInt
+        else if (arg.startsWith("-numFeatures="))
+            numFeatures = arg.drop("-numFeatures=".length)
+        
+        else if (arg.startsWith("-numPartitions="))
+            numPartitions = arg.drop("-numPartitions=".length).toInt
         
         else if (arg.startsWith("-model="))
             model = arg.drop("-model=".length)
@@ -642,7 +651,7 @@ def parse_params(args: Array[String]): Params = {
     return Params(
         appName,
         dataset,
-        partitionSize,
+        numPartitions,
         model, 
         maxIters,
         regParam,
@@ -656,7 +665,8 @@ def parse_params(args: Array[String]): Params = {
         elasticNet,
         stepSize,
         numClusters,
-        maxCategories)
+        maxCategories,
+        numFeatures)
 
 }
 
@@ -670,7 +680,7 @@ def main(args: Array[String]): Unit = {
 
     println("appName:", p.appName)
     println("dataset:", p.dataset)
-    println("partitionSize:", p.partitionSize)
+    println("numPartitions:", p.numPartitions)
     println("model:", p.model)
     println("maxIters:", p.maxIters)
     println("regParam:", p.regParam)
@@ -685,6 +695,7 @@ def main(args: Array[String]): Unit = {
     println("stepSize:", p.stepSize)
     println("numClusters:", p.numClusters)
     println("maxCategories:", p.maxCategories)
+    println("numFeatures:", p.numFeatures)
 
     val spark = SparkSession.builder.appName(p.appName).getOrCreate()
     val data = load_dataset(spark, p)

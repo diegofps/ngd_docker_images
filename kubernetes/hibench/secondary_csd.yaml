@@ -19,10 +19,10 @@ spec:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
               - matchExpressions:
-                - key: kubernetes.io/arch
-                  operator: In
+                - key: node-role.kubernetes.io/control-plane
+                  operator: NotIn
                   values:
-                  - arm64
+                  - "true"
       containers:
         - name: bigdata2-secondary-csd
           image: diegofpsouza/hibench:0.0.1

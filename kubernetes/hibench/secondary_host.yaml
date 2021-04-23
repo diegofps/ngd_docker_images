@@ -19,10 +19,10 @@ spec:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
               - matchExpressions:
-                - key: kubernetes.io/arch
+                - key: node-role.kubernetes.io/control-plane
                   operator: In
                   values:
-                  - amd64
+                  - "true"
       containers:
         - name: bigdata2-secondary-host
           image: diegofpsouza/hibench:0.0.1

@@ -10,10 +10,10 @@ spec:
       requiredDuringSchedulingIgnoredDuringExecution:
         nodeSelectorTerms:
         - matchExpressions:
-          - key: kubernetes.io/arch
+          - key: node-role.kubernetes.io/control-plane
             operator: In
             values:
-            - amd64
+            - "true"
   restartPolicy: Always
   containers:
   - name: bigdata2-primary
