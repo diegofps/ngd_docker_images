@@ -2,7 +2,7 @@
 
 
 if [ ! "$#" = "3" ]; then
-  echo "SINTAX: $0 <SAMPLES> <DIMS> <MODE>"
+  echo "SINTAX: $0 <SAMPLES> <DIMS> <MODE=hdfs|local>"
   exit 1
 fi
 

@@ -6,7 +6,7 @@ then
   exit 0
 fi
 
-NODES=`ifconfig | grep tap | sed 's/tap\([0-9]\+\).\+/node\1/'`
+NODES=`ngd_nodes.sh`
 
 clear_host()
 {

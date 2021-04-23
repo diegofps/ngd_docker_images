@@ -145,11 +145,6 @@ elif task == "regression":
 
 
     print("Generating dataset...")
-    #for job in jobs:
-    #    filepath = regression_generator(job)
-    #    os.system("cat %s >> %s" % (filepath, output))
-    #    os.remove(filepath)
-    
     for filepath in p_imap(regression_generator, jobs):
         os.system("cat %s >> %s" % (filepath, output))
         os.remove(filepath)

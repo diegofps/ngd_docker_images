@@ -6,13 +6,7 @@ then
   exit 0
 fi
 
-NODES_FILEPATH=$1
-if [ "$NODES_FILEPATH" = "" ]
-then
-  NODES=`ifconfig | grep tap | sed 's/tap\([0-9]\+\).\+/node\1/'`
-else
-  NODES=`cat $NODES_FILEPATH`
-fi
+NODES=$(ngd_nodes.sh)
 
 if [ -e '/etc/systemd/system/k3s.service' ]
 then
@@ -20,8 +14,8 @@ then
   exit 0
 fi
 
-echo "Disabling firewall"
-sudo ufw disable
+#echo "Disabling firewall"
+#sudo ufw disable
 
 echo "Installing master"
 curl -sfL https://get.k3s.io | sh -s - server \
