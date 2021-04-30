@@ -32,28 +32,28 @@ run_benchmark()
     
     for i in `seq $N`
     do
-        spark-submit --class br.com.wespa.ngd.spark.automl.Tunner2 \
-          --master spark://bigdata2-primary:7077 \
-          --deploy-mode client \
-          --conf spark.yarn.submit.waitAppCompletion=true \
-          --conf spark.driver.host=`hostname -I` \
-          --driver-memory $DRIVER_MEM \
-          --executor-memory $EXEC_MEM \
-          --executor-cores $EXEC_CORES \
-          --num-executors $NUM_EXEC \
-          hdfs://bigdata2-primary:9000/automl-tunner_2.12-1.0.jar \
-            -m=$MODEL -r=$REPETITIONS -t=$THREADS -ds=$DS \
-          | tee ./tmp.stdout
-        
-        ELLAPSED=$(cat ./tmp.stdout \
-          | grep "Ellapsed time" \
-          | awk '{ print $3 }')
-        
-        SUM=` python3 -c "print($SUM + $ELLAPSED)"`
-        
-        rm ./tmp.stdout
-        
-        echo "=== Iteration $i / $N took $ELLAPSED seconds ==="
+      spark-submit --class br.com.wespa.ngd.spark.automl.Tunner2 \
+        --master spark://bigdata2-primary:7077 \
+        --deploy-mode client \
+        --conf spark.yarn.submit.waitAppCompletion=true \
+        --conf spark.driver.host=`hostname -I` \
+        --driver-memory $DRIVER_MEM \
+        --executor-memory $EXEC_MEM \
+        --executor-cores $EXEC_CORES \
+        --num-executors $NUM_EXEC \
+        hdfs://bigdata2-primary:9000/automl-tunner_2.12-1.0.jar \
+          -m=$MODEL -r=$REPETITIONS -t=$THREADS -ds=$DS \
+        | tee ./tmp.stdout
+      
+      ELLAPSED=$(cat ./tmp.stdout \
+        | grep "Ellapsed time" \
+        | awk '{ print $3 }')
+      
+      SUM=` python3 -c "print($SUM + $ELLAPSED)"`
+      
+      rm ./tmp.stdout
+
+      echo "=== Iteration $i / $N took $ELLAPSED seconds ==="
     done
     
     AVG=` python3 -c "print($SUM / $N)"`
