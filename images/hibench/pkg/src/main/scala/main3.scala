@@ -559,9 +559,9 @@ def load_dataset(spark: SparkSession, p: Params): DataFrame = {
     {
         val partitionsBefore = data.rdd.getNumPartitions
         val partitionsNow = data.rdd.getNumPartitions
-        data.cache
+        //data.cache
 
-        println("Partitions before: %d, Partitions now: %d", partitionsBefore, partitionsNow)
+        //println("Partitions before: %d, Partitions now: %d", partitionsBefore, partitionsNow)
         return data
     }
 }
@@ -572,18 +572,18 @@ def parse_params(args: Array[String]): Params = {
     var dataset = "hdfs://bigdata2-primary:9000/classification_dataset.libsvm"
     var numPartitions = 0
     var model = "lrc"
-    var maxIters = 1000
+    var maxIters = 50000
     var regParam = 0.1
     var factorSize = 8
-    var numHiddenNeurons = 10
-    var blockSize = 128
+    var numHiddenNeurons = 50
+    var blockSize = 512
     var maxDepth = 5
-    var maxBins = 32
-    var numTrees = 5
+    var maxBins = 256
+    var numTrees = 40
     var impurity = "gini"
     var elasticNet = 0.2
     var stepSize = 0.001
-    var numClusters = 10
+    var numClusters = 100
     var maxCategories = 4
     var numFeatures = "30"
 

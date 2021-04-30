@@ -12,7 +12,7 @@ OUTPUT=$2
 sudo echo "Starting multidataset experiment..."
 
 ADDRESS=`sudo kubectl exec -it bigdata2-primary -- hostname -I`
-SPARK_PARAMS="--driver-memory 4g --executor-memory 4g"
+SPARK_PARAMS="--driver-memory 4g --executor-memory 2g"
 
 if [ "$MODE" = "hdfs" ]; then
   DATASET="hdfs://bigdata2-primary:9000/regression.libsvm"
@@ -82,7 +82,7 @@ echo "MODE;SAMPLES;DS_SIZE;lr;dtr;rfr;fmr" > $OUTPUT
 
 
 echo "Starting multidataset regression analysis"
-for i in 100 1000 10000 100000 1000000 10000000 100000000
+for i in 100 1000 10000 100000 1000000 10000000
 do
   echo " --- Starting benchmark for size=$i --- "
   run_benchmark_set $i

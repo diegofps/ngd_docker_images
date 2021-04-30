@@ -43,7 +43,7 @@ run_benchmark()
 
 rm -f $OUTPUT
 
-N=10
+N=1
 run_benchmark bayes Bayes gigantic $N
 run_benchmark kmeans Kmeans large $N
 run_benchmark gmm GMM large $N

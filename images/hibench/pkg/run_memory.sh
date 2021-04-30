@@ -1,22 +1,21 @@
 #!/bin/sh
 
 
-if [ ! "$#" = "2" ]
-then
-  echo "SINTAX: $0 <DS_SIZE> <OUTPUT>"
+if [ ! "$#" = "3" ]; then
+  echo "SINTAX: $0 <DS_SIZE> <MODEL> <OUTPUT>"
   exit 1
 fi
 
 
 DS_SIZE=$1
-OUTPUT=$2
-MODEL=dtr
+MODEL=$2
+OUTPUT=$3
+
 DIMS="30"
 CLUSTERS="100"
 NOISE="0.0"
 LABELS="2"
 JOB_SIZE="100000"
-SPARK_PARAMS="--driver-memory 4g --executor-memory 2g"
 
 
 echo "Building and deploying the pkg"
@@ -51,26 +50,26 @@ fi
 
 
 echo "Clearing output file"
-echo "PARTITIONS;ELLAPSED" > $OUTPUT
+echo "EXEC_MEMORY_SIZE;ELLAPSED" > $OUTPUT
 
 
-echo "Running for different partition sizes"
+echo "Running for different memory sizes"
 run()
 {
-    PARTITIONS=$1
+    MEMORY=$1
     
-    echo "Running por partitionSize=$PARTITIONS"
+    echo "Running por executor memory=$MEMORY"
 
-    VAL=$(sudo kubectl exec -it bigdata2-primary -- /app/run_single.sh "$SPARK_PARAMS" \
+    VAL=$(sudo kubectl exec -it bigdata2-primary -- /app/run_single.sh "--driver-memory 4g --executor-memory $MEMORY" \
         "-dataset=hdfs://bigdata2-primary:9000/regression.libsvm \
-         -appName=Multidataset -model=lr -numPartitions=${PARTITIONS}" \
+         -appName=Multidataset -model=$MODEL" \
          | grep "Ellapsed time" | awk '{ print $3 }')
 
-    echo "Ellapsed time for $PARTITIONS was $VAL"
-    echo "$PARTITIONS;$VAL" >> $OUTPUT
+    echo "Ellapsed time for $MEMORY was $VAL"
+    echo "$MEMORY;$VAL" >> $OUTPUT
 }
 
-for i in 0 
+for i in 3072m
 do
     run $i
 done

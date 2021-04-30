@@ -135,8 +135,16 @@ def decode_categories(idds: String): Map[Int, Int] = {
 }
 
 def load_dataset(spark: SparkSession, filepath: String): DataFrame = {
-    val data = spark.read.format("libsvm").load(filepath)
+    val data = spark.read
+        .format("libsvm")
+        .option("numFeatures", 30)
+        .load(filepath)
+    
     data.cache()
+
+    println("Counting dataset to force cache creation")
+    data.count()
+
     return data
 }
 
@@ -892,7 +900,6 @@ def main(args: Array[String]): Unit = {
         println("Unexpected parameter: " + arg)
     }
 
-    val startedAt = System.currentTimeMillis()
     val spark = SparkSession.builder.appName("AutoML").getOrCreate()
     val data = load_dataset(spark, datasetFilepath)
     val jobs = ListBuffer[Job2]()
@@ -946,11 +953,14 @@ def main(args: Array[String]): Unit = {
         add_kmeans_clustering(data, numRepetitions, jobs)
     
 
-    println("Model:" + model)
-    println("Threads:" + numThreads)
-    println("Jobs:" + jobs.size.toString)
-    println("Dataset:" + datasetFilepath)
-    println("Repetitions:" + numRepetitions)
+    println("Model: " + model)
+    println("Threads: " + numThreads)
+    println("Jobs: " + jobs.size.toString)
+    println("Dataset: " + datasetFilepath)
+    println("Repetitions: " + numRepetitions)
+    println("Partitions: " + data.rdd.getNumPartitions)
+
+    val startedAt = System.currentTimeMillis()
 
     //implicit val ec = concurrent.ExecutionContext.fromExecutorService(Executors.newWorkStealingPool(numThreads))
     implicit val ec = concurrent.ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(numThreads))
@@ -970,7 +980,7 @@ def main(args: Array[String]): Unit = {
 
     results.foreach(println)
 
-    println("Ellapsed time:" + ellapsed)
+    println("Ellapsed time: " + ellapsed)
     println("Done!")
     spark.stop()
     System.exit(0)
