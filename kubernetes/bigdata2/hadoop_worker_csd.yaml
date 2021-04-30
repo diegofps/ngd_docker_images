@@ -1,0 +1,92 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: hadoop-worker-host
+  labels:
+    app: hadoop-worker-host
+spec:
+  selector:
+    matchLabels:
+      name: hadoop-worker-host
+  template:
+    metadata:
+      labels:
+        name: hadoop-worker-host
+    spec:
+      restartPolicy: Always
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: node-role.kubernetes.io/control-plane
+                  operator: NotIn
+                  values:
+                  - "true"
+      volumes:
+        - name: hadoop-data
+          hostPath:
+            path: /media/storage
+            type: Directory
+      containers:
+        - name: hadoop-worker-host
+          image: diegofpsouza/hibench:0.0.1
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - mountPath: /hadoop_data
+              name: hadoop-data
+          env:
+            - name: MODE
+              value: hadoop_worker
+          ports:
+            - containerPort: 2181
+            - containerPort: 7077
+            - containerPort: 8030
+            - containerPort: 8031
+            - containerPort: 8032
+            - containerPort: 8033
+            - containerPort: 8040
+            - containerPort: 8042
+            - containerPort: 8044
+            - containerPort: 8045
+            - containerPort: 8046
+            - containerPort: 8047
+            - containerPort: 8048
+            - containerPort: 8049
+            - containerPort: 8080
+            - containerPort: 8088
+            - containerPort: 8089
+            - containerPort: 8090
+            - containerPort: 8091
+            - containerPort: 8111
+            - containerPort: 8188
+            - containerPort: 8190
+            - containerPort: 8480
+            - containerPort: 8481
+            - containerPort: 8485
+            - containerPort: 8788
+            - containerPort: 8888
+            - containerPort: 9000
+            - containerPort: 9046
+            - containerPort: 9864
+            - containerPort: 9865
+            - containerPort: 9866
+            - containerPort: 9867
+            - containerPort: 9868
+            - containerPort: 9869
+            - containerPort: 9870
+            - containerPort: 9871
+            - containerPort: 10020
+            - containerPort: 10033
+            - containerPort: 10200
+            - containerPort: 19888
+            - containerPort: 19890
+            - containerPort: 50030
+            - containerPort: 50060
+            - containerPort: 50070
+            - containerPort: 50071
+            - containerPort: 50072
+            - containerPort: 50075
+            - containerPort: 50100
+            - containerPort: 50105
+            - containerPort: 50200
