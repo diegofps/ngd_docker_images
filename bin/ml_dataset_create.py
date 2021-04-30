@@ -15,7 +15,7 @@ if len(args) != 9:
 
 
 from sklearn.datasets import dump_svmlight_file
-from p_tqdm import p_imap
+from p_tqdm import p_uimap
 
 import numpy as np
 import math
@@ -99,7 +99,7 @@ if task == "classification":
 
 
     print("Generating dataset...")
-    for filepath in p_imap(classification_generator, jobs):
+    for filepath in p_uimap(classification_generator, jobs):
         os.system("cat %s >> %s" % (filepath, output))
         os.remove(filepath)
 
@@ -145,7 +145,7 @@ elif task == "regression":
 
 
     print("Generating dataset...")
-    for filepath in p_imap(regression_generator, jobs):
+    for filepath in p_uimap(regression_generator, jobs):
         os.system("cat %s >> %s" % (filepath, output))
         os.remove(filepath)
 
