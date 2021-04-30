@@ -6,13 +6,7 @@ then
   exit 0
 fi
 
-NODES_FILEPATH=$1
-if [ "$NODES_FILEPATH" = "" ]
-then	
-  NODES=`ifconfig | grep tap | sed 's/tap\([0-9]\+\).\+/node\1/'`
-else
-  NODES=`cat $NODES_FILEPATH`
-fi
+NODES=`ngd_nodes.sh`
 
 uninstall_node()
 {
