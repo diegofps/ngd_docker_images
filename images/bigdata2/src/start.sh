@@ -2,72 +2,48 @@
 
 echo "Start script"
 
-
-################################################################################
-# Start the cluster
-################################################################################
-
-STARTED_LOCK="/hadoop/started.lock"
-
+if [ -e "./callback.sh" ]; then ./callback.sh before ; fi
 
 if [ "$MODE" = "primary" ]; then
     echo "Starting as primary node"
-
-    # Configure hibench, if available
-    if [ -e "/hibench" -a "$(cat /hibench/conf/spark.conf | grep park.driver.host)" = '' ]
-    then
-        echo "Setting spark.driver.host in /hibench/conf/spark.conf"
-        cat /hibench/conf/spark.conf | sed "s/# Spark home/# Host address\nspark.driver.host       $(hostname -I)\n\n# Spark home/" > ./tmp
-        mv ./tmp /hibench/conf/spark.conf
-    fi
-
-
-    # Init Hadoop
-    if [ -e "$STARTED_LOCK" ]; then
-        echo "Master node already initialized, skipping namenode format"
-
-    else
-        echo "Master node already initialized, skipping namenode format"
-        # Format the namenode and create a cluster
-        hdfs namenode -format alpha
-        touch $STARTED_LOCK
-    fi
-
-    hdfs --daemon start namenode
-    yarn --daemon start resourcemanager
-    yarn --daemon start nodemanager
-    yarn --daemon start proxyserver
-    mapred --daemon start historyserver
-
-
-    # Init Spark
-    /spark/sbin/start-master.sh -h 0.0.0.0
-
-
-    # Follow hadoop logs
-    echo "Following hadoop namenode log"
-    tail -f /hadoop/logs/hadoop-root-namenode-*.log
+    ./hadoop_primary_start.sh
+    ./spark_primary_start.sh
+    ./hadoop_logs.sh
 
 elif [ "$MODE" = "secondary" ]; then
     echo "Starting as secondary node"
+    ./hadoop_worker_start.sh
+    ./spark_worker_start.sh
+    ./hadoop_logs.sh
 
 
-    # Init Hadoop
-    hdfs --daemon start datanode
+elif [ "$MODE" = "hadoop_primary" ]; then
+    echo "Starting as hadoop primary node"
+    ./hadoop_primary_start.sh
+    ./hadoop_logs.sh
+
+elif [ "$MODE" = "hadoop_worker" ]; then
+    echo "Starting as hadoop primary node"
+    ./hadoop_worker_start.sh
+    ./hadoop_logs.sh
 
 
-    # Init spark
-    cat /spark/conf/spark-env.sh | sed "s:# - SPARK_WORKER_CORES, :SPARK_WORKER_CORES=$(nproc) # :" > ./tmp && mv ./tmp /spark/conf/spark-env.sh
-    /spark/sbin/start-slave.sh spark://bigdata2-primary:7077
+elif [ "$MODE" = "spark_primary" ]; then
+    echo "Starting as spark primary node"
+    ./spark_primary_start.sh
+    ./spark_logs.sh
 
+elif [ "$MODE" = "spark_worker" ]; then
+    echo "Starting as hadoop primary node"
+    ./spark_worker_start.sh
+    ./spark_logs.sh
 
-    # Follow hadoop logs
-    echo "Following hadoop datanode log"
-    tail -f /hadoop/logs/hadoop-root-datanode-*.log
 
 elif [ "$MODE" = "client" ]; then
     echo "Starting as client"
-    bash
+    sleep infinity
     exit 0
 
 fi
+
+if [ -e "./callback.sh" ]; then ./callback.sh after ; fi
