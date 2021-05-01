@@ -8,7 +8,7 @@ RUN apt install openjdk-8-jre openjdk-8-jdk -yq
 WORKDIR /src
 COPY data .
 
-RUN /src/install_hadoop.sh bigdata2-primary
+RUN /src/install_hadoop.sh hadoop-primary
 RUN /src/install_spark.sh
 
 #########################################################

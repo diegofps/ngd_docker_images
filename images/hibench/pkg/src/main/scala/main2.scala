@@ -92,9 +92,9 @@ case class Result2(acc: Double, job: Job2)
 object Tunner2 {
 
 // Default test datasets
-val DATASET_CLASSIFICATION = "hdfs://bigdata2-primary:9000/classification_dataset.libsvm"
-val DATASET_CLUSTERING = "hdfs://bigdata2-primary:9000/clustering_dataset.libsvm"
-val DATASET_REGRESSION = "hdfs://bigdata2-primary:9000/regression_dataset.libsvm"
+val DATASET_CLASSIFICATION = "hdfs://hadoop-primary:9000/classification_dataset.libsvm"
+val DATASET_CLUSTERING = "hdfs://hadoop-primary:9000/clustering_dataset.libsvm"
+val DATASET_REGRESSION = "hdfs://hadoop-primary:9000/regression_dataset.libsvm"
 
 
 // Regression types

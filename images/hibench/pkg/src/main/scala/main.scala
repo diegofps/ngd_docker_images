@@ -49,7 +49,7 @@ case class Result(acc: Double, training_time: Double, evaluation_time: Double, j
 object Tunner {
 
 val DATASET_FILEPATH = "/spark/data/mllib/sample_libsvm_data.txt"
-//val DATASET_FILEPATH = "hdfs://bigdata2-primary:9000/sample_libsvm_data.txt"
+//val DATASET_FILEPATH = "hdfs://hadoop-primary:9000/sample_libsvm_data.txt"
 
 val TYPE_GRADIENT_BOOSTED_TREES = "gradient_boosted_trees"
 val TYPE_LOGISTIC_REGRESSION = "logistic_regression"

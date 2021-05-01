@@ -30,9 +30,8 @@ spec:
           env:
             - name: MODE
               value: spark_worker
-          env:
             - name: SPARK_CORE_MULTIPLIER
-              value: 1
+              value: "1"
           ports:
             - containerPort: 2181
             - containerPort: 7077

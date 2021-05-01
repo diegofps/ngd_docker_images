@@ -19,7 +19,7 @@ run_benchmark()
     do
         START=`date +%s`
         /usr/bin/time -v spark-submit --class org.apache.spark.examples.SparkPi \
-            --master spark://bigdata2-primary:7077 \
+            --master spark://spark-primary:7077 \
             --deploy-mode client \
             --conf spark.yarn.submit.waitAppCompletion=true \
             --conf spark.driver.host=`hostname -I` \
@@ -27,7 +27,7 @@ run_benchmark()
             --driver-memory 1g \
             --executor-memory 1g \
             --executor-cores 1 \
-            hdfs://bigdata2-primary:9000/automl-tunner_2.12-1.0.jar 1000
+            hdfs://hadoop-primary:9000/automl-tunner_2.12-1.0.jar 1000
 
         END=`date +%s`
         

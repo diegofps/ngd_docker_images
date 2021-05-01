@@ -33,7 +33,7 @@ run_benchmark()
     for i in `seq $N`
     do
       spark-submit --class br.com.wespa.ngd.spark.automl.Tunner2 \
-        --master spark://bigdata2-primary:7077 \
+        --master spark://spark-primary:7077 \
         --deploy-mode client \
         --conf spark.yarn.submit.waitAppCompletion=true \
         --conf spark.driver.host=`hostname -I` \
@@ -41,7 +41,7 @@ run_benchmark()
         --executor-memory $EXEC_MEM \
         --executor-cores $EXEC_CORES \
         --num-executors $NUM_EXEC \
-        hdfs://bigdata2-primary:9000/automl-tunner_2.12-1.0.jar \
+        hdfs://hadoop-primary:9000/automl-tunner_2.12-1.0.jar \
           -m=$MODEL -r=$REPETITIONS -t=$THREADS -ds=$DS \
         | tee ./tmp.stdout
       
@@ -70,8 +70,8 @@ T=8
 
 
 if [ "$TYPE" = "classification" -o "$TYPE" = "all" ]; then
-  #DS="hdfs://bigdata2-primary:9000/classification.libsvm"
-  DS="/classification.libsvm"
+  DS="hdfs://hadoop-primary:9000/classification.libsvm"
+  #DS="/classification.libsvm"
 
   run_benchmark kmeans 10 $T $N $DS
   run_benchmark lrc 20 $T $N $DS
@@ -86,12 +86,12 @@ fi
 
 
 if [ "$TYPE" = "regression" -o "$TYPE" = "all" ]; then
-  #DS="hdfs://bigdata2-primary:9000/regression.libsvm"
-  DS="/regression.libsvm"
+  DS="hdfs://hadoop-primary:9000/regression.libsvm"
+  #DS="/regression.libsvm"
 
-  run_benchmark lr 50 $T $N $DS
-  run_benchmark dtr 25 $T $N $DS
-  run_benchmark rfr 12 $T $N $DS
+  run_benchmark lr 25 $T $N $DS
+  run_benchmark dtr 15 $T $N $DS
+  run_benchmark rfr 10 $T $N $DS
   #run_benchmark gbtr 10 $T $N $DS
   #run_benchmark fmr 15 $T $N $DS
 fi

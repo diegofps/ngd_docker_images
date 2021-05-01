@@ -25,26 +25,26 @@ echo "Building and deploying the pkg"
 
 if [ ! "$DS_SIZE" = "0" ]; then
 
-  echo "Deploying ml_dataset_create.py to bigdata2-primary"
-  sudo kubectl cp `which ml_dataset_create.py` bigdata2-primary:/app/ml_dataset_create.py
+  echo "Deploying ml_dataset_create.py to hadoop-primary"
+  sudo kubectl cp `which ml_dataset_create.py` hadoop-primary:/app/ml_dataset_create.py
 
 
   echo "Creating dataset"
-  #sudo kubectl exec -it bigdata2-primary -- /app/ml_dataset_create.py \
+  #sudo kubectl exec -it hadoop-primary -- /app/ml_dataset_create.py \
   #    $DS_SIZE $DIMS $CLUSTERS $NOISE $LABELS $JOB_SIZE \
   #    classification ./classification.libsvm
   
-  sudo kubectl exec -it bigdata2-primary -- /app/ml_dataset_create.py \
+  sudo kubectl exec -it hadoop-primary -- /app/ml_dataset_create.py \
       $DS_SIZE $DIMS $CLUSTERS $NOISE $LABELS $JOB_SIZE \
       regression ./regression.libsvm
   
   
   echo "Deploying dataset to hdfs"
-  #sudo kubectl exec -it bigdata2-primary -- hadoop fs -rm /classification.libsvm
-  #sudo kubectl exec -it bigdata2-primary -- hadoop fs -put /app/classification.libsvm /
+  #sudo kubectl exec -it hadoop-primary -- hadoop fs -rm /classification.libsvm
+  #sudo kubectl exec -it hadoop-primary -- hadoop fs -put /app/classification.libsvm /
   
-  sudo kubectl exec -it bigdata2-primary -- hadoop fs -rm /regression.libsvm
-  sudo kubectl exec -it bigdata2-primary -- hadoop fs -put /app/regression.libsvm /
+  sudo kubectl exec -it hadoop-primary -- hadoop fs -rm /regression.libsvm
+  sudo kubectl exec -it hadoop-primary -- hadoop fs -put /app/regression.libsvm /
 
 fi
 
@@ -60,8 +60,8 @@ run()
     
     echo "Running por executor memory=$MEMORY"
 
-    VAL=$(sudo kubectl exec -it bigdata2-primary -- /app/run_single.sh "--driver-memory 4g --executor-memory $MEMORY" \
-        "-dataset=hdfs://bigdata2-primary:9000/regression.libsvm \
+    VAL=$(sudo kubectl exec -it spark-primary -- /app/run_single.sh "--driver-memory 4g --executor-memory $MEMORY" \
+        "-dataset=hdfs://hadoop-primary:9000/regression.libsvm \
          -appName=Multidataset -model=$MODEL" \
          | grep "Ellapsed time" | awk '{ print $3 }')
 

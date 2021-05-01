@@ -11,11 +11,11 @@ OUTPUT=$2
 
 sudo echo "Starting multidataset experiment..."
 
-ADDRESS=`sudo kubectl exec -it bigdata2-primary -- hostname -I`
+ADDRESS=`sudo kubectl exec -it spark-primary -- hostname -I`
 SPARK_PARAMS="--driver-memory 4g --executor-memory 2g"
 
 if [ "$MODE" = "hdfs" ]; then
-  DATASET="hdfs://bigdata2-primary:9000/regression.libsvm"
+  DATASET="hdfs://hadoop-primary:9000/regression.libsvm"
 
 elif [ "$MODE" = "local" ]; then
   DATASET="/app/regression.libsvm"
@@ -33,9 +33,9 @@ run_benchmark_set()
   ./dataset_create.sh $SAMPLES 30 $MODE regression
 
   if [ "$MODE" = "hdfs" ]; then
-    DS_SIZE=`sudo kubectl exec -it bigdata2-primary -- hadoop fs -ls -h / | grep regression.libsvm | awk '{ print $5 $6 }'`
+    DS_SIZE=`sudo kubectl exec -it hadoop-primary -- hadoop fs -ls -h / | grep regression.libsvm | awk '{ print $5 $6 }'`
   elif [ "$MODE" = "local" ]; then
-    DS_SIZE=`sudo kubectl exec -it bigdata2-primary -- ls -lh /app | grep regression.libsvm | awk '{ print $5 }'`
+    DS_SIZE=`sudo kubectl exec -it hadoop-primary -- ls -lh /app | grep regression.libsvm | awk '{ print $5 }'`
   else
     DS_ZIE="0"
   fi
@@ -43,27 +43,27 @@ run_benchmark_set()
   echo -n "$MODE;$SAMPLES;$DS_SIZE" >> $OUTPUT
 
   echo "Running lr..."
-  VAL=$(sudo kubectl exec -it bigdata2-primary -- /app/run_single.sh "$SPARK_PARAMS" "\
+  VAL=$(sudo kubectl exec -it spark-primary -- /app/run_single.sh "$SPARK_PARAMS" "\
       -dataset=$DATASET -appName=Multidataset -model=lr" | grep "Ellapsed time" | awk '{ print $3 }')
   echo -n ";$VAL" >> $OUTPUT
 
   echo "Starting dtr..."
-  VAL=$(sudo kubectl exec -it bigdata2-primary -- /app/run_single.sh "$SPARK_PARAMS" "\
+  VAL=$(sudo kubectl exec -it spark-primary -- /app/run_single.sh "$SPARK_PARAMS" "\
       -dataset=$DATASET -appName=Multidataset -model=dtr" | grep "Ellapsed time" | awk '{ print $3 }')
   echo -n ";$VAL" >> $OUTPUT
 
   echo "Starting rfr"
-  VAL=$(sudo kubectl exec -it bigdata2-primary -- /app/run_single.sh "$SPARK_PARAMS" "\
+  VAL=$(sudo kubectl exec -it spark-primary -- /app/run_single.sh "$SPARK_PARAMS" "\
       -dataset=$DATASET -appName=Multidataset -model=rfr" | grep "Ellapsed time" | awk '{ print $3 }')
   echo -n ";$VAL" >> $OUTPUT
 
   #echo "Starting gbtr..."
-  #VAL=$(sudo kubectl exec -it bigdata2-primary -- /app/run_single.sh "$SPARK_PARAMS" "\
+  #VAL=$(sudo kubectl exec -it spark-primary -- /app/run_single.sh "$SPARK_PARAMS" "\
   #    -dataset=$DATASET -appName=Multidataset -model=gbtr" | grep "Ellapsed time" | awk '{ print $3 }')
   #echo -n ";$VAL" >> $OUTPUT
 
   echo "Starting fmr..."
-  VAL=$(sudo kubectl exec -it bigdata2-primary -- /app/run_single.sh "$SPARK_PARAMS" "\
+  VAL=$(sudo kubectl exec -it spark-primary -- /app/run_single.sh "$SPARK_PARAMS" "\
       -dataset=$DATASET -appName=Multidataset -model=fmr" | grep "Ellapsed time" | awk '{ print $3 }')
   echo -n ";$VAL" >> $OUTPUT
 

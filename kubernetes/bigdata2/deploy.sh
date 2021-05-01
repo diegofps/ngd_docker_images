@@ -12,11 +12,11 @@ if [ "$MODE" = "csd" ]; then
   storage_clear.sh
 
   sudo kubectl create -f hadoop_primary.yaml &
-  sudo kubectl create -f hadoop_secondary_csd.yaml &
+  sudo kubectl create -f hadoop_worker_csd.yaml &
   sudo kubectl create -f hadoop_service.yaml &
   
   sudo kubectl create -f spark_primary.yaml &
-  sudo kubectl create -f spark_secondary_csd.yaml &
+  sudo kubectl create -f spark_worker_csd.yaml &
   sudo kubectl create -f spark_service.yaml &
 
   wait
@@ -29,13 +29,13 @@ elif [ "$MODE" = "hybrid" ]; then
   storage_clear.sh
 
   sudo kubectl create -f hadoop_primary.yaml &
-  sudo kubectl create -f hadoop_secondary_csd.yaml &
-  sudo kubectl create -f hadoop_secondary_host.yaml &
+  sudo kubectl create -f hadoop_worker_csd.yaml &
+  sudo kubectl create -f hadoop_worker_host.yaml &
   sudo kubectl create -f hadoop_service.yaml &
   
   sudo kubectl create -f spark_primary.yaml &
-  sudo kubectl create -f spark_secondary_csd.yaml &
-  sudo kubectl create -f spark_secondary_host.yaml &
+  sudo kubectl create -f spark_worker_csd.yaml &
+  sudo kubectl create -f spark_worker_host.yaml &
   sudo kubectl create -f spark_service.yaml &
 
   wait
@@ -48,11 +48,11 @@ elif [ "$MODE" = "host" ]; then
   storage_clear.sh
 
   sudo kubectl create -f hadoop_primary.yaml &
-  sudo kubectl create -f hadoop_secondary_host.yaml &
+  sudo kubectl create -f hadoop_worker_host.yaml &
   sudo kubectl create -f hadoop_service.yaml &
   
   sudo kubectl create -f spark_primary.yaml &
-  sudo kubectl create -f spark_secondary_host.yaml &
+  sudo kubectl create -f spark_worker_host.yaml &
   sudo kubectl create -f spark_service.yaml &
 
   wait

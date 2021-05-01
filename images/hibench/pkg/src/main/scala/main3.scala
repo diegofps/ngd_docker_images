@@ -569,7 +569,7 @@ def load_dataset(spark: SparkSession, p: Params): DataFrame = {
 def parse_params(args: Array[String]): Params = {
 
     var appName = "AutoML2"
-    var dataset = "hdfs://bigdata2-primary:9000/classification_dataset.libsvm"
+    var dataset = "hdfs://hadoop-primary:9000/classification_dataset.libsvm"
     var numPartitions = 0
     var model = "lrc"
     var maxIters = 50000
