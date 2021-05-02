@@ -4,24 +4,189 @@ metadata:
   name: hadoop-primary
 spec:
   ports:
-    - name: p1
+
+    - name: a
+      port: 2181
+      targetPort: 2181
+
+    - name: b
+      port: 3476
+      targetPort: 3476
+
+    - name: c
+      port: 8030
+      targetPort: 8030
+
+    - name: d
+      port: 8031
+      targetPort: 8031
+
+    - name: e
+      port: 8032
+      targetPort: 8032
+
+    - name: f
+      port: 8033
+      targetPort: 8033
+
+    - name: g
+      port: 8040
+      targetPort: 8040
+
+    - name: h
       port: 8042
       targetPort: 8042
-    - name: p2
+
+    - name: i
+      port: 8044
+      targetPort: 8044
+
+    - name: j
+      port: 8045
+      targetPort: 8045
+
+    - name: k
+      port: 8046
+      targetPort: 8046
+
+    - name: l
+      port: 8047
+      targetPort: 8047
+
+    - name: m
+      port: 8048
+      targetPort: 8048
+
+    - name: "n"
+      port: 8049
+      targetPort: 8049
+
+    - name: o
       port: 8088
       targetPort: 8088
-    - name: p3
+
+    - name: p
+      port: 8089
+      targetPort: 8089
+
+    - name: q
+      port: 8090
+      targetPort: 8090
+
+    - name: r
+      port: 8091
+      targetPort: 8091
+
+    - name: s
+      port: 8111
+      targetPort: 8111
+
+    - name: t
+      port: 8188
+      targetPort: 8188
+
+    - name: u
+      port: 8190
+      targetPort: 8190
+
+    - name: v
+      port: 8480
+      targetPort: 8480
+
+    - name: w
+      port: 8481
+      targetPort: 8481
+
+    - name: x
+      port: 8485
+      targetPort: 8485
+
+    - name: "y"
+      port: 8788
+      targetPort: 8788
+
+    - name: z
+      port: 8888
+      targetPort: 8888
+
+    - name: aa
       port: 9000
       targetPort: 9000
-    - name: p4
+
+    - name: ab
       port: 9046
       targetPort: 9046
-    - name: p5
+
+    - name: ac
+      port: 9864
+      targetPort: 9864
+
+    - name: ad
+      port: 9865
+      targetPort: 9865
+
+    - name: ae
+      port: 9866
+      targetPort: 9866
+
+    - name: af
+      port: 9867
+      targetPort: 9867
+
+    - name: ag
+      port: 9868
+      targetPort: 9868
+
+    - name: ah
+      port: 9869
+      targetPort: 9869
+
+    - name: ai
       port: 9870
       targetPort: 9870
-    - name: p6
+
+    - name: aj
+      port: 9871
+      targetPort: 9871
+
+    - name: ak
+      port: 10020
+      targetPort: 10020
+
+    - name: al
+      port: 10033
+      targetPort: 10033
+
+    - name: am
+      port: 10200
+      targetPort: 10200
+
+    - name: an
       port: 19888
       targetPort: 19888
+
+    - name: ao
+      port: 19890
+      targetPort: 19890
+
+    - name: ap
+      port: 50071
+      targetPort: 50071
+
+    - name: aq
+      port: 50072
+      targetPort: 50072
+
+    - name: ar
+      port: 50100
+      targetPort: 50100
+
+    - name: as
+      port: 50105
+      targetPort: 50105
+
   selector:
     app: hadoop-primary
   type: LoadBalancer
+
+

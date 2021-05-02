@@ -84,14 +84,22 @@ cat /hadoop/etc/hadoop/mapred-site.xml | sed 's|</configuration>|\n  <property>\
 
 cat /hadoop/etc/hadoop/mapred-site.xml | sed 's|</configuration>|\n  <property>\n    <name>mapreduce.application.classpath</name>\n    <value>/hadoop/share/hadoop/mapreduce/*,/hadoop/share/hadoop/mapreduce/lib/*,/hadoop/share/hadoop/common/*,/hadoop/share/hadoop/common/lib/*,/hadoop/share/hadoop/yarn/*,/hadoop/share/hadoop/yarn/lib/*,/hadoop/share/hadoop/hdfs/*,/hadoop/share/hadoop/hdfs/lib/*</value>\n  </property>\n</configuration>|' > ./tmp && mv ./tmp /hadoop/etc/hadoop/mapred-site.xml
 
+cat /hadoop/etc/hadoop/mapred-site.xml | sed 's|</configuration>|\n  <property>\n    <name>mapreduce.jobhistory.address</name>\n    <value>hadoop-primary:10020</value>\n  </property>\n</configuration>|' > ./tmp && mv ./tmp /hadoop/etc/hadoop/mapred-site.xml
+
 
 ### Yarn
 
-# Configure yarn.nodemanager.aux-services
 cat /hadoop/etc/hadoop/yarn-site.xml | sed 's/<\/configuration>/  <property>\n    <name>yarn.nodemanager.aux-services<\/name>\n    <value>mapreduce_shuffle<\/value>\n  <\/property>\n<\/configuration>/' > ./tmp && mv ./tmp /hadoop/etc/hadoop/yarn-site.xml
 
-# Configure yarn.web-proxy.address
 cat /hadoop/etc/hadoop/yarn-site.xml | sed 's/<\/configuration>/\n  <property>\n    <name>yarn.web-proxy.address<\/name>\n    <value>0.0.0.0:9046<\/value>\n  <\/property>\n<\/configuration>/' > ./tmp && mv ./tmp /hadoop/etc/hadoop/yarn-site.xml
+
+cat /hadoop/etc/hadoop/yarn-site.xml | sed 's/<\/configuration>/\n  <property>\n    <name>yarn.resourcemanager.address<\/name>\n    <value>hadoop-primary:8032<\/value>\n  <\/property>\n<\/configuration>/' > ./tmp && mv ./tmp /hadoop/etc/hadoop/yarn-site.xml
+
+cat /hadoop/etc/hadoop/yarn-site.xml | sed 's/<\/configuration>/\n  <property>\n    <name>yarn.resourcemanager.scheduler.address<\/name>\n    <value>hadoop-primary:8030<\/value>\n  <\/property>\n<\/configuration>/' > ./tmp && mv ./tmp /hadoop/etc/hadoop/yarn-site.xml
+
+cat /hadoop/etc/hadoop/yarn-site.xml | sed 's/<\/configuration>/\n  <property>\n    <name>yarn.resourcemanager.resource-tracker.address<\/name>\n    <value>hadoop-primary:8031<\/value>\n  <\/property>\n<\/configuration>/' > ./tmp && mv ./tmp /hadoop/etc/hadoop/yarn-site.xml
+
+cat /hadoop/etc/hadoop/yarn-site.xml | sed 's/<\/configuration>/\n  <property>\n    <name>yarn.resourcemanager.hostname<\/name>\n    <value>hadoop-primary<\/value>\n  <\/property>\n<\/configuration>/' > ./tmp && mv ./tmp /hadoop/etc/hadoop/yarn-site.xml
 
 
 # Remove unnecessary files

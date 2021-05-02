@@ -25,3 +25,6 @@ RUN rm -rf /var/cache/apt/*
 
 COPY --from=intermediate /hibench /hibench
 #COPY --from=intermediate /root/.m2 /root/.m2
+
+WORKDIR /app
+COPY src .
