@@ -19,10 +19,12 @@ spec:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
               - matchExpressions:
-                - key: node-role.kubernetes.io/control-plane
+                - key: kubernetes.io/hostname
                   operator: NotIn
                   values:
-                  - "true"
+                  - "wespa-x399-aorus-xtreme"
+                  - "vostro"
+                  - "Perl"
       containers:
         - name: spark-worker-csd
           image: diegofpsouza/hibench:0.0.1

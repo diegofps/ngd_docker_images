@@ -9,7 +9,7 @@ fi
 echo -n "master: "
 sudo service k3s status | grep -E '(active|inactive)'
 
-NODES=`ifconfig | grep tap | sed 's/tap\([0-9]\+\).\+/node\1/'`
+NODES=`ngd_nodes.sh`
 
 for node in $NODES
 do

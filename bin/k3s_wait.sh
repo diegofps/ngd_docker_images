@@ -70,10 +70,10 @@ TARGET=$1
 if [ -z "$TARGET" ]; then
     sintax
 
-elif [ $TARGET == "start" ]; then
+elif [ $TARGET == "begin" -o $TARGET == "start" ]; then
     wait_start
 
-elif [ $TARGET == "end" ]; then
+elif [ $TARGET == "end" -o $TARGET == "stop" ]; then
     wait_end
 
 elif [ $TARGET == "counter" ]; then
@@ -83,4 +83,3 @@ else
     echo "Invalid option: $TARGET"
 
 fi
-

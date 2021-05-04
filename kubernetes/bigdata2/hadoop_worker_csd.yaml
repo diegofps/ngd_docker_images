@@ -1,17 +1,17 @@
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: hadoop-worker-host
+  name: hadoop-worker-csd
   labels:
-    app: hadoop-worker-host
+    app: hadoop-worker-csd
 spec:
   selector:
     matchLabels:
-      name: hadoop-worker-host
+      name: hadoop-worker-csd
   template:
     metadata:
       labels:
-        name: hadoop-worker-host
+        name: hadoop-worker-csd
     spec:
       restartPolicy: Always
       affinity:
@@ -19,17 +19,19 @@ spec:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
               - matchExpressions:
-                - key: node-role.kubernetes.io/control-plane
+                - key: kubernetes.io/hostname
                   operator: NotIn
                   values:
-                  - "true"
+                  - "wespa-x399-aorus-xtreme"
+                  - "vostro"
+                  - "Perl"
       volumes:
         - name: hadoop-data
           hostPath:
             path: /media/storage
             type: Directory
       containers:
-        - name: hadoop-worker-host
+        - name: hadoop-worker-csd
           image: diegofpsouza/hibench:0.0.1
           imagePullPolicy: IfNotPresent
           volumeMounts:
