@@ -24,7 +24,7 @@ spec:
                   values:
                   - "wespa-x399-aorus-xtreme"
                   - "vostro"
-                  - "Perl"
+                  - "perl"
       volumes:
         - name: hadoop-data
           hostPath:
