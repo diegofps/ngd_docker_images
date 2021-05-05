@@ -25,6 +25,7 @@ spec:
                   - "wespa-x399-aorus-xtreme"
                   - "vostro"
                   - "perl"
+                  - "oahu"
       containers:
         - name: spark-worker-csd
           image: diegofpsouza/hibench:0.0.1

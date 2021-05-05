@@ -25,6 +25,7 @@ spec:
                   - "wespa-x399-aorus-xtreme"
                   - "vostro"
                   - "perl"
+                  - "oahu"
       volumes:
         - name: hadoop-data
           hostPath:
@@ -40,6 +41,8 @@ spec:
           env:
             - name: MODE
               value: hadoop_worker
+            - name: HADOOP_HDFS_REPLICATION
+              value: "1"
           ports:
             - containerPort: 2181
             - containerPort: 7077
