@@ -2,6 +2,7 @@
 
 if [ ! "$#" = 1 ]; then
   echo "SINTAX: $0 <MODE=hybrid|host|csd>"
+  exit 1
 fi
 
 MODE=$1

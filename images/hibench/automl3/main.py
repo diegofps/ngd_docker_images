@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 
 from sklearn.metrics import mean_squared_error
+from pyspark.sql.types import FloatType
+
 import numpy as np
 import json
 import sys
@@ -44,7 +46,7 @@ def run_ridge(params):
 
     print("Testing model")
     pred = model.predict(testset[0])
-    mse = mean_squared_error(testset[1], pred)
+    mse =  float(mean_squared_error(testset[1], pred))
     
     print("result:", mse)
     return (mse,)
@@ -64,7 +66,7 @@ def run_lasso(params):
 
     print("Testing model")
     pred = model.predict(testset[0])
-    mse = mean_squared_error(testset[1], pred)
+    mse =  float(mean_squared_error(testset[1], pred))
     
     print("result:", mse)
     return (mse,)
@@ -90,7 +92,7 @@ def run_sgd(params):
 
     print("Testing model")
     pred = model.predict(testset[0])
-    mse = mean_squared_error(testset[1], pred)
+    mse =  float(mean_squared_error(testset[1], pred))
 
     print("result:", mse)
     return (mse,)
@@ -110,7 +112,7 @@ def run_dtr(params):
 
     print("Testing model")
     pred = model.predict(testset[0])
-    mse = mean_squared_error(testset[1], pred)
+    mse =  float(mean_squared_error(testset[1], pred))
 
     print("result:", mse)
     return (mse,)
@@ -130,7 +132,7 @@ def run_nearest_regression(params):
 
     print("Testing model")
     pred = model.predict(testset[0])
-    mse = mean_squared_error(testset[1], pred)
+    mse = float(mean_squared_error(testset[1], pred))
 
     print("result:", mse)
     return (mse,)
@@ -138,35 +140,40 @@ def run_nearest_regression(params):
 
 
 # Run
-def run_test(params):
+def run_basic(params):
 
     model = params["model"]
     params = params["params"]
     
     if model == "ridge":
-        run_ridge(params)
+        return run_ridge(params)
     
     elif model == "lasso":
-        run_lasso(params)
+        return run_lasso(params)
     
     elif model == "sgd":
-        run_sgd(params)
+        return run_sgd(params)
     
     elif model == "dtr":
-        run_dtr(params)
+        return run_dtr(params)
     
     elif model == "nearest_regression":
-        run_nearest_regression(params)
+        return run_nearest_regression(params)
     
     else:
         raise RuntimeError("Invalid model: " + model)
 
 
-def run_spark(row):
+def run_df(row):
 
     params = json.loads(row["value"])
-    return run_test(params)
+    return run_basic(params)
 
+
+def run_rdd(row):
+    print(row)
+    params = json.loads(row[0])
+    return run_basic(params)
 
 
 # Test methods
@@ -236,14 +243,14 @@ def add_decision_tree_regression(dataset, repetitions, jobs):
     for max_depth in max_depth_vals:
         for repetition in repetition_vals:
             
-            jobs.append(json.dumps({
+            jobs.append({
                 "model": "dtr",
                 "params": {
                     "trainset": dataset + ".train",
                     "testset": dataset + ".test",
                     "max_depth": max_depth
                 }
-            }))
+            })
 
 
 def add_ridge_regression(dataset, repetitions, jobs):
@@ -254,14 +261,14 @@ def add_ridge_regression(dataset, repetitions, jobs):
     for alpha in alpha_vals:
         for repetition in repetition_vals:
 
-            jobs.append(json.dumps({
+            jobs.append({
                 "model": "ridge",
                 "params": {
                     "trainset": dataset + ".train",
                     "testset": dataset + ".test",
                     "alpha": alpha
                 }
-            }))
+            })
 
 
 def add_lasso_regression(dataset, repetitions, jobs):
@@ -272,14 +279,14 @@ def add_lasso_regression(dataset, repetitions, jobs):
     for alpha in alpha_vals:
         for repetition in repetition_vals:
 
-            jobs.append(json.dumps({
+            jobs.append({
                 "model": "lasso",
                 "params": {
                     "trainset": dataset + ".train",
                     "testset": dataset + ".test",
                     "alpha": alpha
                 }
-            }))
+            })
 
 
 def add_sgd_regression(dataset, repetitions, jobs):
@@ -290,7 +297,7 @@ def add_sgd_regression(dataset, repetitions, jobs):
     for max_iter in max_iter_vals:
         for repetition in repetition_vals:
 
-            jobs.append(json.dumps({
+            jobs.append({
                 "model": "sgd",
                 "params": {
                     "trainset": dataset + ".train",
@@ -298,12 +305,29 @@ def add_sgd_regression(dataset, repetitions, jobs):
                     "max_iter": max_iter,
                     "tol": 0.001,
                 }
-            }))
-
+            })
 
 
 # Main methods
-def main_spark(args):
+def build_jobs(dataset, repetitions, model):
+    jobs = []
+
+    if model == "decision_tree" or model == "all":
+        add_decision_tree_regression(dataset, repetitions, jobs)
+    
+    if model == "ridge" or model == "all":
+        add_ridge_regression(dataset, repetitions, jobs)
+    
+    if model == "lasso" or model == "all":
+        add_lasso_regression(dataset, repetitions, jobs)
+    
+    if model == "sgd" or model == "all":
+        add_sgd_regression(dataset, repetitions, jobs)
+
+    return jobs
+
+
+def main_rdd(args):
 
     if len(args) != 4:
         print("SINTAX: %s spark <SPLITTED_DATASET> <REPETITIONS> <MODEL>" % args[0])
@@ -312,19 +336,44 @@ def main_spark(args):
     dataset = args[1]
     repetitions = int(args[2])
     model = args[3]
-    jobs = []
+    jobs = build_jobs(dataset, repetitions, model)
+    jobs = [json.dumps(job) for job in jobs]
 
-    if model == "dtr" or model == "all":
-        add_decision_tree_regression(dataset, repetitions, jobs)
-    
-    if model == "rr" or model == "all":
-        add_ridge_regression(dataset, repetitions, jobs)
-    
-    if model == "lasso" or model == "all":
-        add_lasso_regression(dataset, repetitions, jobs)
-    
-    if model == "sgdr" or model == "all":
-        add_sgd_regression(dataset, repetitions, jobs)
+    print("dataset:", dataset)
+    print("repetitions:", repetitions)
+    print("model:", model)
+    print("num_jobs:", len(jobs))
+    print("jobs:", jobs)
+
+    from pyspark.sql import SparkSession
+    spark = SparkSession.builder.appName("AutoML3").getOrCreate()
+        #.config("spark.some.config.option", "some-value") \
+
+    jobsRDD = spark.sparkContext.parallelize(jobs, len(jobs))
+    print("partitions:", jobsRDD.getNumPartitions())
+    results = jobsRDD.glom().map(run_rdd).collect()
+
+    print(results)
+
+
+def main_df(args):
+
+    if len(args) != 4:
+        print("SINTAX: %s spark <SPLITTED_DATASET> <REPETITIONS> <MODEL>" % args[0])
+        sys.exit(1)
+
+    dataset = args[1]
+    repetitions = int(args[2])
+    model = args[3]
+
+    jobs = build_jobs(dataset, repetitions, model)
+    jobs = [json.dumps(job) for job in jobs]
+
+    print("dataset:", dataset)
+    print("repetitions:", repetitions)
+    print("model:", model)
+    print("num_jobs:", len(jobs))
+    print("jobs:", jobs)
 
     from pyspark.sql import SparkSession
     spark = SparkSession.builder.appName("AutoML3").getOrCreate()
@@ -332,12 +381,55 @@ def main_spark(args):
 
     jobsDF = spark.createDataFrame(jobs, schema="string")
     jobsDF.repartition(len(jobs))
+    print("partitions:", jobsDF.rdd.getNumPartitions())
 
-    resultsDF = jobsDF.rdd.map(run_spark).toDF(["result"])
+    #jobsDF = spark.sparkContext.parallelize(jobs, numSlices=len(jobs))
+
+    resultsDF = jobsDF.rdd.map(run_df).toDF(["result"])
     resultsDF.show()
 
-    
-def main_local(args):
+
+def main_mp(args):
+
+    if len(args) != 5:
+        print("SINTAX: %s local <SPLITTED_DATASET> <REPETITIONS> <MODEL> <PROCS>" % args[0])
+        sys.exit(1)
+
+    dataset = args[1]
+    repetitions = int(args[2])
+    model = args[3]
+    procs = int(args[4])
+
+    jobs = build_jobs(dataset, repetitions, model)
+
+    from multiprocessing import Pool
+    with Pool(procs) as p:
+        results = p.map(run_basic, jobs)
+
+    print(results)
+
+    print("Done!")
+
+
+def main_serial(args):
+
+    if len(args) != 4:
+        print("SINTAX: %s local <SPLITTED_DATASET> <REPETITIONS> <MODEL>" % args[0])
+        sys.exit(1)
+
+    dataset = args[1]
+    repetitions = int(args[2])
+    model = args[3]
+
+    jobs = build_jobs(dataset, repetitions, model)
+    results = [run_basic(job) for job in jobs]
+
+    print(results)
+
+    print("Done!")
+
+
+def main_sanity(args):
 
     if len(args) != 3:
         print("SINTAX: %s local <SPLITTED_DATASET> <FUNC_NAME>" % args[0])
@@ -359,11 +451,20 @@ def main(args):
 
     mode = args[1]
 
-    if mode == "spark":
-        main_spark(args[1:])
+    if mode == "df":
+        main_df(args[1:])
 
-    elif mode == "local":
-        main_local(args[1:])
+    elif mode == "rdd":
+        main_rdd(args[1:])
+
+    elif mode == "mp":
+        main_mp(args[1:])
+
+    elif mode == "serial":
+        main_serial(args[1:])
+
+    elif mode == "sanity":
+        main_sanity(args[1:])
 
     else:
         print("Invalid mode:", mode)

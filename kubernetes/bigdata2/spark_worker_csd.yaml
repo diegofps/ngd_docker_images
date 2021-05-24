@@ -18,14 +18,11 @@ spec:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
-              - matchExpressions:
-                - key: kubernetes.io/hostname
-                  operator: NotIn
-                  values:
-                  - "wespa-x399-aorus-xtreme"
-                  - "vostro"
-                  - "perl"
-                  - "oahu"
+            - matchExpressions:
+              - key: node-role.kubernetes.io/control-plane
+                operator: NotIn
+                values:
+                - "true"
       containers:
         - name: spark-worker-csd
           image: diegofpsouza/hibench:0.0.1
