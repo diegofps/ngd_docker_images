@@ -1,6 +1,6 @@
 # Welcome
 
-These tutorials are built in the hope that they will help people install, configure and use these demos. This is meant to be run inside an NGD cluster.
+These tutorials are built in the hope that they will help people install, configure and use these demos. They are meant to be run inside an NGD cluster (For instance: One Host machine with multiple NGD Newports).
 
 # Before you begin: Add the bin folder to your path
 

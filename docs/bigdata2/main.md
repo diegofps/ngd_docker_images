@@ -4,7 +4,6 @@ This tutorial will explain how to install hadoop and spark on this local cluster
 
 # Dependencies
 
-1. [Configure the bin folder](../index.md)
 1. [Install k3s](../k3s/main.md)
 
 # Prepare your nodes
