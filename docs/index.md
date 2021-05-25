@@ -14,6 +14,6 @@ cd bin
 
 # You may now pick a task and start following that path
 
-* [K3s](k3s/main.md) - This shows how to install k3s, uninstall it and check if everything is running fine.
 * [Hadoop and Spark](bigdata2/main.md) - Shows how to deploy a local cluster with hadoop and spark and how to run some diverse applications.
+* [K3s](k3s/main.md) - This shows how to install k3s, uninstall it and check if everything is running fine.
 * [Private docker registry](docker/private_registry.md) - Configure a local private registry. This is helpful when you want to work on a private or testing project and you don't want to upload it to a public registry, like docker hub.
