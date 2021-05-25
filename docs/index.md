@@ -1,37 +1,19 @@
-## Welcome to GitHub Pages
+# Welcome
 
-You can use the [editor on GitHub](https://github.com/diegofps/ngd_docker_images/edit/master/docs/index.md) to maintain and preview the content for your website in Markdown files.
+These tutorials are built in the hope that they will help people install, configure and use these demos. This is meant to be run inside an NGD cluster.
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+# Before you begin: Add the bin folder to your path
 
-### Markdown
+```bash
+# Enter the bin folder in this repository
+cd bin
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
-
-```markdown
-Syntax highlighted code block
-
-# Header 1
-## Header 2
-### Header 3
-
-- Bulleted
-- List
-
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
+# This will add the current path to your ~/.bashrc. If the path is already present nothing will be added
+./install_pwd.sh
 ```
 
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
+# You may now pick a task and start following that path
 
-### Jekyll Themes
-
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/diegofps/ngd_docker_images/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://github.com/contact) and we’ll help you sort it out.
+* [K3s](k3s/main.md) - This shows how to install k3s, uninstall it and check if everything is running fine.
+* [Hadoop and Spark](bigdata2/main.md) - Shows how to deploy a local cluster with hadoop and spark and how to run some diverse applications.
+* [Private docker registry](docker/private_registry.md) - Configure a local private registry. This is helpful when you want to work on a private or testing project and you don't want to upload it to a public registry, like docker hub.

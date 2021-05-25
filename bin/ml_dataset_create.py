@@ -10,7 +10,7 @@ from sys import argv as args
 import sys
 
 if len(args) != 9:
-    print("Sintax: %s <SAMPLES> <DIMS> <CLUSTERS> <NOISE> <LABELS> <JOB_SIZE> <TASK> <OUTPUT_CSV_FILEPATH>" % args[0])
+    print("Sintax: %s <SAMPLES> <DIMS> <CLUSTERS> <NOISE> <LABELS> <JOB_SIZE> <TASK> <OUTPUT_LIBSVM_FILEPATH>" % args[0])
     sys.exit(1)
 
 
@@ -18,8 +18,6 @@ from sklearn.datasets import dump_svmlight_file
 from p_tqdm import p_uimap
 
 import numpy as np
-import math
-import csv
 import os
 
 

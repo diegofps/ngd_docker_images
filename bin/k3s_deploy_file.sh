@@ -1,6 +1,5 @@
 #!/bin/sh
 
-
 if [ ! "$#" = "3" ]; then
   echo "SINTAX: $0 <POD_PATTERN> <LOCAL_FILE> <REMOTE_FILE>"
   exit 1

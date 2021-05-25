@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 from sklearn.metrics import mean_squared_error
-from pyspark.sql.types import FloatType
+#from pyspark.sql.types import FloatType
 
 import numpy as np
 import json
@@ -178,7 +178,7 @@ def run_rdd(row):
 
 # Test methods
 def test_decision_tree_regression(dataset):
-    run({
+    run_basic({
         "model": "dtr",
         "params": {
             "trainset": dataset + ".train",
@@ -189,7 +189,7 @@ def test_decision_tree_regression(dataset):
 
 
 def test_ridge_regression(dataset):
-    run({
+    run_basic({
         "model": "ridge",
         "params": {
             "trainset": dataset + ".train",
@@ -200,7 +200,7 @@ def test_ridge_regression(dataset):
 
 
 def test_lasso_regression(dataset):
-    run({
+    run_basic({
         "model": "lasso",
         "params": {
             "trainset": dataset + ".train",
@@ -211,7 +211,7 @@ def test_lasso_regression(dataset):
 
 
 def test_sgd_regression(dataset):
-    run({
+    run_basic({
         "model": "sgd",
         "params": {
             "trainset": dataset + ".train",
@@ -223,7 +223,7 @@ def test_sgd_regression(dataset):
 
 
 def test_nearest_regression(dataset):
-    run({
+    run_basic({
         "model": "nearest_regression",
         "params": {
             "trainset": dataset + ".train",
