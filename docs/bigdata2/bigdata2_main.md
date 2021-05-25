@@ -37,6 +37,114 @@ The operation above will take some time as each CSD and the host need to downloa
 * [HDFS explorer](http://localhost:9870/explorer.html#/) - Lists the files stored in HDFS.
 * [Hadoop interface](http://localhost:8088/) - Lists hadoop and mapreduce tasks.
 
+# Accessing the interactive shells: spark-shell and pyspark
+
+The interactive interface is available inside the pods, just like dns names like spark-primary and hadoop-primary. To access them, use one of the commands bellow.
+
+```bash
+# Method 1 : Access the host via bash and then open one of the interactive consoles
+sudo kubectl exec -it spark-primary -- bash # To access the container
+
+pyspark # For the python interface
+spark-shell # For the scala interface
+PYSPARK_PYTHON=python3 pyspark # For the python interface using python3
+
+
+# Method 2 : Direct access from the Host
+sudo kubectl exec -it spark-primary -- pyspark # For the python interface
+sudo kubectl exec -it spark-primary -- spark-shell # For the scala interface
+```
+
+# Accessing hdfs from the command line
+
+The following is a list of some hadoop commands that may help developing 
+
+```bash
+# Access the pod
+sudo kubectl exec -it spark-primary -- bash
+
+# List files
+hadoop fs -ls / # Default path
+hadoop fs -ls hdfs://bigdata2-primary:9000/ # Full path
+ 
+# Touch file
+hadoop fs -touch /test
+ 
+# Create a directory
+hadoop fs -mkdir /diego
+hadoop fs -mkdir -p /diego/fonseca/pereira/de/souza
+ 
+# Remove directory
+hadoop fs -rm -r -f /diego
+hadoop fs -rmdir --ignore-fail-on-non-empty /diego
+hadoop fs -rmdir /diego
+ 
+# Send file to hdfs
+hadoop fs -put gut.txt /gut2.txt
+hadoop fs -copyFromLocal gut.txt /gut2.txt
+ 
+# Get file from hadoop
+hadoop fs -get /gut2.txt gut3.txt
+hadoop fs -copyToLocal /gut4.txt gut5.txt
+ 
+# Copy files inside hdfs
+hadoop fs -cp /diego /diego2
+hadoop fs -cp /diego /diego2
+ 
+# Move files inside hdfs
+hadoop fs -mv /diego /diego2
+ 
+# Free space
+hadoop fs -df
+ 
+# Used space
+hadoop fs -du /diego
+ 
+# Append data to remote file
+hadoop fs -appendToFile ./local /kitty
+ 
+# Remote cat
+hadoop fs -cat /kitty
+ 
+# Remote Checksum
+hadoop fs -checksum /kitty
+ 
+# Count files
+hadoop fs -count /diego
+ 
+# Find files
+hadoop fs -find /diego *seca
+ 
+# Show first 1K bytes in file
+hadoop fs -head /kitty
+ 
+# Show last 1K bytes in file
+hadoop fs -tail /kitty
+hadoop fs -tail -f /kitty # Follow modifications
+ 
+# Set replication number for an individual file
+hdfs dfs -setrep -w 5 /test.snappy.parquet
+ 
+# Display file stats
+hadoop fs -stat /kitty
+ 
+# Test if file exists (output goes to $?)
+hadoop fs -test -e /kitty
+ 
+# Test if it is a directory (output goes to $?)
+hadoop fs -test -d /kitty
+ 
+# Test if it is a file (output goes to $?)
+hadoop fs -test -f /kitty
+```
+
+# Other examples
+
+Try to run some basic examples to see if everything is working fine.
+
+* [Scala package with SparkPI](./test_scala_with_sparkPI_in_a_package.md)
+* [AutoML with Spark and Sklearn](./test_automl_pyspark_with_sklearn.md)
+
 # Undeploy hadoop and spark
 
 ```bash
@@ -46,13 +154,6 @@ cd kubernetes/bigdata2
 # Undo the operations above
 ./undeploy.sh
 ```
-
-# Run some tests
-
-Try to run some basic examples to see if everything is working fine
-
-* [Scala package with SparkPI](./test_scala_with_sparkPI_in_a_package.md)
-* [AutoML with Spark and Sklearn](./test_automl_pyspark_with_sklearn.md)
 
 # Common issues
 

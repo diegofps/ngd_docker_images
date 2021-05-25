@@ -88,12 +88,10 @@ export PYSPARK_PYTHON=python3 # Tell spark you want to use python3
 
 # Run the same application using all cores in just the current node (parallel mode using multiprocessing)
 export OPENBLAS_NUM_THREADS=1 # Configure openblas to disable parallelism, it will come from our multitask implementation
-/usr/bin/time ./main.py \
-    mp /app/regression 10 lasso `nproc`
+/usr/bin/time ./main.py mp /app/regression 10 lasso `nproc`
 
 # Run the same application using just a single processor (serial mode using just for)
 export OPENBLAS_NUM_THREADS=1 # Configure openblas to disable parallelism
-/usr/bin/time ./main.py \
-    serial /app/regression 10 lasso
+/usr/bin/time ./main.py serial /app/regression 10 lasso
 ```
 
