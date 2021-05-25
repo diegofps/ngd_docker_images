@@ -12,7 +12,7 @@ if len(sys.argv) != 2:
 
 
 dataset = sys.argv[1]
-if dataset.endswith(".libsvm")
+if dataset.endswith(".libsvm"):
     dataset = dataset[:-7]
 
 

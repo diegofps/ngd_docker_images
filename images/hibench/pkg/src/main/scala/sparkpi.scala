@@ -29,13 +29,15 @@ object SparkPi {
       .builder
       .appName("Spark Pi")
       .getOrCreate()
+
     val slices = if (args.length > 0) args(0).toInt else 2
-    val n = math.min(100000L * slices, Int.MaxValue).toInt // avoid overflow
+    val n = math.min(100000L * slices, Int.MaxValue).toInt
+
     val count = spark.sparkContext.parallelize(1 until n, slices).map { i => {
-        val n = 1000
+        val nn = 1000
         var agg = 0
 
-        for ( i <- 1 to n) {
+        for ( i <- 1 to nn) {
             val x = random * 2 - 1
             val y = random * 2 - 1
 
@@ -43,9 +45,14 @@ object SparkPi {
                 agg += 1
         }
 
-        agg / n
+        agg / nn.toDouble
     }}.reduce(_ + _)
+
+    println(s"slices is ${slices}")
+    println(s"n is ${n}")
+    println(s"count is ${count}")
     println(s"Pi is roughly ${4.0 * count / (n - 1)}")
+
     spark.stop()
   }
 }
