@@ -52,8 +52,8 @@ cd kubernetes/bigdata2
 
 Try to run some basic examples to see if everything is working fine
 
-* (AutoML with Spark and Sklearn)[./test_automl_pyspark_with_sklearn.md]
-* (Scala package with SparkPI)[./test_scala_with_sparkPI_in_a_package.md]
+* [AutoML with Spark and Sklearn]()./test_automl_pyspark_with_sklearn.md)
+* [Scala package with SparkPI]()./test_scala_with_sparkPI_in_a_package.md)
 
 # Common issues
 

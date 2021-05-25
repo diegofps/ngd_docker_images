@@ -3,6 +3,7 @@
 images/monitor1_cron/src/*.csv
 images/monitor1_cron/src/*.parquet
 images/hibench/pkg/project
+*.npy
 *.tar.gz
 *.tar.gz.sha512
 **/data/spark-*.tgz*
