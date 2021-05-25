@@ -1,10 +1,10 @@
-# Welcome
+# Building a scala executable package for Spark
 
 This tutorial will help you compile a scala application, deploy it to to HDFS and run it inside Spark.
 
 # Dependencies
 
-1. [A configured k3s cluster](../k3s/main.md)
+1. [A configured k3s cluster](../k3s/k3s_main.md)
 1. [A working hadoop + spark setup](./bigdata2_main.md)
 
 # Configure your environment

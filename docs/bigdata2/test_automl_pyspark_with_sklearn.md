@@ -1,10 +1,10 @@
-# Welcome
+# AutoML using Spark and Sklearn
 
 This tutorial will help you run a basic AutoML using spark and sklearn. It will create a syntetic dataset, split it in train and test data, convert to numpy raw format and copy it to every node. Then, a pySpark application will evaluate multiple models on it using multiple parameters with the goal of finding the optimal model and its configuration. The benefit of this strategy over spark's ml lib is that each node evaluates a model localy, without much communication. The downside is that sklearn requires the entire dataset to be stored in the ram, making it not suitable for big data, wherease spark's ml lib is.
 
 # Dependencies
 
-1. [A configured k3s cluster](../k3s/main.md)
+1. [A configured k3s cluster](../k3s/k3s_main.md)
 1. [A working hadoop + spark setup](./bigdata2_main.md)
 
 # Configure your environment

@@ -1,4 +1,4 @@
-# Welcome
+# Configuring a Hadoop + Spark setup
 
 This tutorial will explain how to install hadoop and spark on this local cluster.
 

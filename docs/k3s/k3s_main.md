@@ -1,4 +1,4 @@
-# Welcome
+# Configuring Kubernetes with K3s 
 
 This page describes some utilities on how to configure kubernetes on a Newport cluster using k3s.
 
