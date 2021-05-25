@@ -5,7 +5,7 @@ This tutorial will help you run a basic AutoML using spark and sklearn. It will 
 # Dependencies
 
 1. [A configured k3s cluster](../k3s/main.md)
-1. [A working hadoop + spark setup](./main.md)
+1. [A working hadoop + spark setup](./bigdata2_main.md)
 
 # Configure your environment
 

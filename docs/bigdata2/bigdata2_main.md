@@ -4,7 +4,7 @@ This tutorial will explain how to install hadoop and spark on this local cluster
 
 # Dependencies
 
-1. [Install k3s](../k3s/main.md)
+1. [Install k3s](../k3s/k3s_main.md)
 
 # Prepare your nodes
 
@@ -25,9 +25,9 @@ storage_clear.sh
 cd kubernetes/bigdata2
 
 # Choose the deploy mode
-./deploy.sh hybrid # To configure the host and all CSDs as hadoop data nodes and spark worker nodes
-./deploy.sh csd # To configure all CSDs as hadoop data nodes and spark worker nodes
-./deploy.sh host # To configure the host as hadoop data nodes and spark worker nodes
+./deploy.sh hybrid # If you want to configure the host and all CSDs as hadoop data nodes and spark worker nodes
+./deploy.sh csd # If you want to configure all CSDs as hadoop data nodes and spark worker nodes
+./deploy.sh host # If you want to configure the host as hadoop data nodes and spark worker nodes
 ```
 
 The operation above will take some time as each CSD and the host need to download the image from docker hub. Once complete you can do a sanity check and assert they are working by accessing the following URLs.
@@ -51,8 +51,8 @@ cd kubernetes/bigdata2
 
 Try to run some basic examples to see if everything is working fine
 
-* [AutoML with Spark and Sklearn](./test_automl_pyspark_with_sklearn.md)
 * [Scala package with SparkPI](./test_scala_with_sparkPI_in_a_package.md)
+* [AutoML with Spark and Sklearn](./test_automl_pyspark_with_sklearn.md)
 
 # Common issues
 

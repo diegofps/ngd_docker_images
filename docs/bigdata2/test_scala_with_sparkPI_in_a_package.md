@@ -4,7 +4,8 @@ This tutorial will help you compile a scala application, deploy it to to HDFS an
 
 # Dependencies
 
-1. [A working hadoop + spark setup](./main.md)
+1. [A configured k3s cluster](../k3s/main.md)
+1. [A working hadoop + spark setup](./bigdata2_main.md)
 
 # Configure your environment
 
