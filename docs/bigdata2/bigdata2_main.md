@@ -51,8 +51,9 @@ PYSPARK_PYTHON=python3 pyspark # For the python interface using python3
 
 
 # Method 2 : Direct access from the Host
-sudo kubectl exec -it spark-primary -- pyspark # For the python interface
 sudo kubectl exec -it spark-primary -- spark-shell # For the scala interface
+sudo kubectl exec -it spark-primary -- pyspark # For the python interface
+sudo kubectl exec -it spark-primary -- bash -c "PYSPARK_PYTHON=python3 pyspark" # For the python3 interface
 ```
 
 # Accessing hdfs from the command line

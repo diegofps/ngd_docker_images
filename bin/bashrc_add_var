@@ -1,0 +1,17 @@
+#!/bin/sh
+
+VAR_NAME=$1
+VAR_VALUE=$2
+
+if [ "$VAR_NAME" = "" -o "$VAR_VALUE" = "" ]
+then
+  echo "Syntax: bashrc_add_var: <VAR_NAME> <VAR_VALUE>"
+  exit 1
+
+else
+  TGT="$VAR_NAME=\"$VAR_VALUE\""
+  if [ "$(cat /etc/environment | grep "$TGT")" = '' ]
+  then
+    sudo bash -c "echo '$TGT' >> /etc/environment"
+  fi
+fi

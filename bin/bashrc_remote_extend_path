@@ -1,0 +1,16 @@
+#!/bin/sh
+
+NEW_PATH=$1
+NODE_NAME=$2
+
+if [ "$NEW_PATH" = "" -o "$NODE_NAME" = "" ]
+then
+  echo "Syntax: $0 <NEW_PATH> <NODE_NAME>"
+fi
+
+TGT="export PATH=\"$NEW_PATH:\$PATH\""
+
+if [ "$(ssh $NODE_NAME cat '~/.bashrc' | grep "$TGT")" = '' ]
+then
+  ssh $NODE_NAME "echo '$TGT' >> ~/.bashrc"
+fi

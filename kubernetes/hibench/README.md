@@ -17,9 +17,9 @@
 ### Preparing everything for the first use
 
 ```bash
-# Run install_pwd.sh to add ngd_docker_images/bin on your PATH, in ~/.bashrc
+# Run bashrc_extend_path to add ngd_docker_images/bin in your PATH
 cd /path/to/ngd_docker_images/bin
-./install_pwd.sh
+./bashrc_extend_path
 
 # Format the drivers (you only need to do this once)
 storage_format.sh

@@ -9,7 +9,7 @@ These tutorials are built in the hope that they will help people install, config
 cd bin
 
 # This will add the current path to your ~/.bashrc. If the path is already present nothing will be added
-./install_pwd.sh
+./bashrc_extend_path
 ```
 
 # You may now pick a task and start following that path

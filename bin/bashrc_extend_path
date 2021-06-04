@@ -1,0 +1,15 @@
+#!/bin/sh
+
+NEW_PATH=$1
+
+if [ "$NEW_PATH" = "" ]
+then
+  NEW_PATH=`pwd`
+fi
+
+TGT="export PATH=\"$NEW_PATH:\$PATH\""
+
+if [ "$(cat ~/.bashrc | grep "$TGT")" = '' ]
+then
+  echo $TGT >> ~/.bashrc
+fi
