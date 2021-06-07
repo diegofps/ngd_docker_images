@@ -2,15 +2,16 @@
 
 init_cluster()
 {
+    FORCE=$1
     STARTED_LOCK="/hadoop/started.lock"
 
-    if [ -e "$STARTED_LOCK" ]; then
-        echo "Master node already initialized, skipping namenode format"
-
-    else
+    if [ $FORCE = "-f" -o ! -e "$STARTED_LOCK" ]; then
         echo "Master node already initialized, skipping namenode format"
         hdfs namenode -format alpha -clusterid 249bfd46-a641-4ccd-8a02-82667bae653e
         touch $STARTED_LOCK
+
+    else
+        echo "Master node already initialized, skipping namenode format"
     fi
 }
 
@@ -43,8 +44,8 @@ start_secondary_nodes()
 
     echo "Secondary hadoop nodes started!"
 }
-    
-init_cluster
+
+init_cluster $1
 start_primary_node
 start_secondary_nodes
 

@@ -155,7 +155,7 @@ configure_nodes()
     NODES=`ngd_nodes.sh`
 
     for node in $NODES ; do
-        configure_node $node #&
+        configure_node $node &
     done
 
     wait
