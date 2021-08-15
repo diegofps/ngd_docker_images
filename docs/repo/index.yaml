@@ -3,7 +3,7 @@ entries:
   demo_ws_telemetry:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2021-08-14T13:48:59.091450799-03:00"
+    created: "2021-08-15T12:46:24.696041375-03:00"
     description: A Helm chart for Kubernetes
     digest: fbd2f81e25e0bcd55579d680119a0c3e0dd4821be86fe22ca5885df3aa0eac8f
     name: demo_ws_telemetry
@@ -14,9 +14,9 @@ entries:
   facedetection:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2021-08-14T13:48:59.092089957-03:00"
+    created: "2021-08-15T12:46:24.696547829-03:00"
     description: Face detection for heterogeneous clusters (amd64 and arm64)
-    digest: 9b43f3af97b727738cf1b061cb09f29531281a887818c495390d6bfb84dcd5d4
+    digest: be8341f47f491b30d231773bf3fdd5955391ba8dbae32102189700e242f90d7a
     name: facedetection
     type: application
     urls:
@@ -25,7 +25,7 @@ entries:
   monitor1:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2021-08-14T13:48:59.09273761-03:00"
+    created: "2021-08-15T12:46:24.697294239-03:00"
     description: Folder monitor with image interpreter and indexing for Newport Devices
     digest: 5b8d40f6d8584f88d4aac9cbdd395b061e5a39811f132c9e6f4bd2dd7693778c
     name: monitor1
@@ -36,9 +36,9 @@ entries:
   openalpr:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2021-08-14T13:48:59.093326282-03:00"
+    created: "2021-08-15T12:46:24.697688579-03:00"
     description: License plate recognition for heterogeneous clusters (amd64 and arm64)
-    digest: 8f5bd15439c6d96ef7866fac42e7451b1a740bb42ad0c2bf638e12cadf004686
+    digest: 2f21447975c130716dec52c8fca299ef50af56d685db15d22758c75cdf306bbd
     name: openalpr
     type: application
     urls:
@@ -47,12 +47,12 @@ entries:
   tesseract:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2021-08-14T13:48:59.093932968-03:00"
+    created: "2021-08-15T12:46:24.698084592-03:00"
     description: OCR for heterogeneous clusters (amd64 and arm64)
-    digest: 9eee42fa7046485767d26d492ff8699fc04873a2f7577169a27aa9b6901b89d7
+    digest: 8cb58807e0303dfbaa77b444f3365763d2aadc163f1ec50093fe65effbb2366f
     name: tesseract
     type: application
     urls:
     - https://diegofps.github.io/ngd_docker_images/repo/tesseract-0.1.0.tgz
     version: 0.1.0
-generated: "2021-08-14T13:48:59.090693729-03:00"
+generated: "2021-08-15T12:46:24.695070629-03:00"
